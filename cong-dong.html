@@ -177,33 +177,106 @@
             scrollToBottom();
         }
 
-        // --- 4. HÀM MÔ PHỎNG (Sẽ thay bằng API Backend ở bài sau) ---
-        function sendMockMessage() {
+        // --- 4. KẾT NỐI API BACKEND ---
+        const API_URL = 'https://my-tale.onrender.com/api/messages';
+        let isBanned = false;
+        let lastMessageCount = 0; // Biến nhớ số lượng tin nhắn hiện tại
+
+        // Nút gửi trên giao diện sẽ gọi hàm này thay vì hàm mô phỏng
+        document.querySelector('button[onclick="sendMockMessage()"]').setAttribute('onclick', 'sendMessage()');
+
+        // Thay đổi sự kiện Enter để gọi hàm thật
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Hàm tải tin nhắn từ máy chủ (Hỏi thăm liên tục)
+        async function fetchMessages() {
+            if (isBanned) return; 
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const messages = await response.json();
+                    
+                    // Chỉ vẽ lại màn hình nếu có tin nhắn mới (tránh bị giật màn hình)
+                    if (messages.length > lastMessageCount) {
+                        chatBox.innerHTML = ''; // Xóa tin cũ
+                        messages.forEach(msg => renderSingleMessage({
+                            id: msg._id,
+                            uuid: msg.uuid,
+                            content: msg.content,
+                            replyToText: msg.replyToText
+                        }));
+                        lastMessageCount = messages.length; // Lưu lại số lượng mới
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải tin nhắn:', error);
+            }
+        }
+
+        // Hàm gửi tin nhắn thật lên Trạm kiểm duyệt
+        async function sendMessage() {
+            if (isBanned) {
+                alert("Thiết bị của bạn đã bị cấm!");
+                return;
+            }
+
             const text = chatInput.value.trim();
             if (!text) return;
 
-            // Mô phỏng tạo cục dữ liệu gửi đi
-            const newMessage = {
-                id: 'msg_' + Date.now(),
+            const payload = {
                 uuid: myUUID,
                 content: text,
                 replyToId: replyingToId,
-                replyToText: replyingToId ? replyTargetText.innerText.replace(/"/g, '') : null // Lấy lại text đang reply
+                replyToText: replyingToId ? replyTargetText.innerText.replace(/"/g, '') : null
             };
 
-            // In ngay ra màn hình
-            renderSingleMessage(newMessage);
-            
-            // Dọn dẹp
-            chatInput.value = '';
-            cancelReply();
+            // Tạm khóa ô nhập khi đang gửi
+            chatInput.disabled = true;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Gửi an toàn và thành công
+                    chatInput.value = '';
+                    cancelReply();
+                    fetchMessages(); // Ép tải lại ngay lập tức
+                } else if (response.status === 403) {
+                    // PHÁT HIỆN TỪ NGỮ VI PHẠM -> KÍCH HOẠT BAN (CẤM)
+                    isBanned = true;
+                    alert("🚨 " + data.message); // Báo động đỏ
+                    chatInput.value = 'Thiết bị đã bị khóa mõm.';
+                    chatInput.classList.add('bg-rose-100', 'text-rose-600', 'cursor-not-allowed', 'border-rose-400');
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            } catch (error) {
+                console.error("Lỗi gửi tin nhắn:", error);
+                alert("Không thể kết nối đến máy chủ.");
+            } finally {
+                if (!isBanned) {
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+            }
         }
 
-        // Tạo vài tin nhắn mẫu ban đầu cho sinh động
+        // Khởi động hệ thống khi mở web
         window.onload = () => {
-            renderSingleMessage({ id: '1', uuid: 'anon_bot01', content: 'Chào mừng các bạn đến với Góc Tâm Sự!' });
-            renderSingleMessage({ id: '2', uuid: 'anon_bot02', content: 'Ở đây mọi người được xưng hô thoải mái nhé, nhưng hãy lịch sự nha.' });
-        }
+            fetchMessages(); // Tải lần đầu
+            // Thiết lập đồng hồ: Cứ 3 giây lại chạy hàm fetchMessages() 1 lần
+            setInterval(fetchMessages, 3000); 
+        };
     </script>
 </body>
 </html>
