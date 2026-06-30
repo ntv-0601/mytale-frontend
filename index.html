@@ -405,34 +405,38 @@
       // --- 1. Dữ liệu Truyện (Đã thêm Nội dung chương) ---
       let stories = []
       // Hàm gọi API lấy dữ liệu từ Backend
-        async function fetchStoriesFromBackend() {
-            try {
-                // Gửi yêu cầu đến máy chủ của bạn
-                const response = await fetch('https://my-tale.onrender.com/api/stories');
-                
-                if (!response.ok) {
-                    throw new Error('Lỗi khi lấy dữ liệu');
-                }
-
-                // Chuyển đổi dữ liệu trả về sang định dạng JSON
-                const data = await response.json();
-                
-                // Gán dữ liệu lấy được vào mảng stories
-                stories = data;
-
-                // Gọi hàm hiển thị giao diện với dữ liệu mới
-                renderStories(stories);
-                
-                // Cập nhật lại bộ lọc nếu người dùng đang dùng bộ lọc
-                applyFilters();
-
-            } catch (error) {
-                console.error("Không thể kết nối đến Backend:", error);
-                // Hiển thị thông báo lỗi lên màn hình (nếu muốn)
-                const storyGrid = document.getElementById('story-grid');
-                storyGrid.innerHTML = `<p class="text-center w-full text-red-500 col-span-full">Lỗi kết nối máy chủ. Vui lòng thử lại sau!</p>`;
-            }
+        // Hàm gọi API lấy dữ liệu từ Backend
+async function fetchStoriesFromBackend() {
+    try {
+        const response = await fetch('https://my-tale.onrender.com/api/stories');
+        
+        if (!response.ok) {
+            throw new Error('Lỗi khi lấy dữ liệu');
         }
+
+        const data = await response.json();
+        
+        // --- BẢN VÁ 1: ĐỌC LẠI TRÍ NHỚ TỪ TRÌNH DUYỆT ---
+        // Lấy danh sách ID các truyện đã thả tim trên thiết bị này
+        const likedStories = JSON.parse(localStorage.getItem('mytales_liked_stories') || '[]');
+        
+        // Gán dữ liệu vào mảng stories và tự động bôi đỏ tim nếu truyện nằm trong "trí nhớ"
+        stories = data.map(story => {
+            if (likedStories.includes(story._id)) {
+                story.liked = true;
+            }
+            return story;
+        });
+
+        renderStories(stories);
+        applyFilters();
+
+    } catch (error) {
+        console.error("Không thể kết nối đến Backend:", error);
+        const storyGrid = document.getElementById('story-grid');
+        storyGrid.innerHTML = `<p class="text-center w-full text-red-500 col-span-full">Lỗi kết nối máy chủ. Vui lòng thử lại sau!</p>`;
+    }
+}
      
       // --- 2. Trạng thái ---
       let currentTheme = 'light';
@@ -527,9 +531,8 @@
     if (storyIndex > -1) {
         const story = stories[storyIndex];
         
-        // 1. Ảo thuật giao diện (Làm trước để người dùng thấy tim đổi màu ngay lập tức)
+        // 1. Ảo thuật giao diện
         story.liked = !story.liked;
-        // Đảm bảo likes là số trước khi cộng trừ
         story.likes = (story.likes || 0) + (story.liked ? 1 : -1); 
         
         countSpan.textContent = story.likes;
@@ -546,6 +549,19 @@
             icon.classList.add('ph', 'group-hover/like:text-rose-400'); 
             countSpan.classList.remove('text-rose-500');
         }
+
+        // --- BẢN VÁ 2: GHI CHÉP VÀO BỘ NHỚ TRÌNH DUYỆT ---
+        let likedStories = JSON.parse(localStorage.getItem('mytales_liked_stories') || '[]');
+        if (story.liked) {
+            // Nếu tim đỏ, thêm ID truyện vào danh sách
+            if (!likedStories.includes(id)) {
+                likedStories.push(id);
+            }
+        } else {
+            // Nếu bỏ tim, xóa ID truyện khỏi danh sách
+            likedStories = likedStories.filter(storyId => storyId !== id);
+        }
+        localStorage.setItem('mytales_liked_stories', JSON.stringify(likedStories));
 
         // 2. Chuyển phát nhanh dữ liệu thật lên Backend
         try {
