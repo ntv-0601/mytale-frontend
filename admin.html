@@ -619,73 +619,71 @@ coverFileInput.addEventListener('change', async function(e) {
             } catch (e) { alert("Lỗi kết nối!"); }
         }
         // --- HỆ THỐNG TRÌNH PHÁT NHẠC ---
+        // --- HỆ THỐNG TRÌNH PHÁT NHẠC (BẢN AN TOÀN) ---
         const audio = document.getElementById('bg-audio');
-        const disk = document.getElementById('record-disk');
-        const playBtnIcon = document.getElementById('icon-play-pause');
-        const volumeSlider = document.getElementById('volume-slider');
+        
+        // Chỉ chạy code nếu tìm thấy thẻ audio trên trang
+        if (audio) {
+            const disk = document.getElementById('record-disk');
+            const playBtnIcon = document.getElementById('icon-play-pause');
+            const volumeSlider = document.getElementById('volume-slider');
 
-        // 1. Khôi phục trí nhớ khi vừa tải trang
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedTime = localStorage.getItem('mytale_music_time') || 0;
-            const isPlaying = localStorage.getItem('mytale_music_playing') === 'true';
-            const savedVolume = localStorage.getItem('mytale_music_volume') || 0.5;
+            window.addEventListener('DOMContentLoaded', () => {
+                const savedTime = localStorage.getItem('mytale_music_time') || 0;
+                const isPlaying = localStorage.getItem('mytale_music_playing') === 'true';
+                const savedVolume = localStorage.getItem('mytale_music_volume') || 0.5;
 
-            // Đặt lại thông số cũ
-            audio.volume = savedVolume;
-            volumeSlider.value = savedVolume;
-            audio.currentTime = savedTime;
+                audio.volume = savedVolume;
+                if (volumeSlider) volumeSlider.value = savedVolume;
+                audio.currentTime = savedTime;
 
-            if (isPlaying) {
-                // Trình duyệt thường chặn tự động phát nhạc nếu người dùng chưa click vào trang
-                // Hàm catch sẽ xử lý trường hợp bị chặn này êm đẹp
-                audio.play().then(() => {
+                if (isPlaying) {
+                    audio.play().then(() => updateMusicUI(true)).catch(() => {
+                        updateMusicUI(false);
+                        localStorage.setItem('mytale_music_playing', 'false');
+                    });
+                } else {
+                    updateMusicUI(false);
+                }
+            });
+
+            window.toggleMusic = function() {
+                if (audio.paused) {
+                    audio.play();
                     updateMusicUI(true);
-                }).catch(() => {
+                    localStorage.setItem('mytale_music_playing', 'true');
+                } else {
+                    audio.pause();
                     updateMusicUI(false);
                     localStorage.setItem('mytale_music_playing', 'false');
+                }
+            }
+
+            function updateMusicUI(isPlaying) {
+                if (!disk || !playBtnIcon) return;
+                if (isPlaying) {
+                    disk.classList.add('spinning');
+                    disk.classList.remove('paused');
+                    playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
+                } else {
+                    disk.classList.add('paused');
+                    playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
+                }
+            }
+
+            if (volumeSlider) {
+                volumeSlider.addEventListener('input', (e) => {
+                    audio.volume = e.target.value;
+                    localStorage.setItem('mytale_music_volume', e.target.value);
                 });
-            } else {
-                updateMusicUI(false);
             }
-        });
 
-        // 2. Nút Bật/Tắt nhạc
-        window.toggleMusic = function() {
-            if (audio.paused) {
-                audio.play();
-                updateMusicUI(true);
-                localStorage.setItem('mytale_music_playing', 'true');
-            } else {
-                audio.pause();
-                updateMusicUI(false);
-                localStorage.setItem('mytale_music_playing', 'false');
-            }
+            setInterval(() => {
+                if (!audio.paused) {
+                    localStorage.setItem('mytale_music_time', audio.currentTime);
+                }
+            }, 1000);
         }
-
-        // 3. Cập nhật giao diện xoay đĩa
-        function updateMusicUI(isPlaying) {
-            if (isPlaying) {
-                disk.classList.add('spinning');
-                disk.classList.remove('paused');
-                playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
-            } else {
-                disk.classList.add('paused');
-                playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
-            }
-        }
-
-        // 4. Cầm thanh gạt chỉnh âm lượng
-        volumeSlider.addEventListener('input', (e) => {
-            audio.volume = e.target.value;
-            localStorage.setItem('mytale_music_volume', e.target.value);
-        });
-
-        // 5. Cứ mỗi 1 giây, hệ thống sẽ lưu lại thời gian bài hát một lần
-        setInterval(() => {
-            if (!audio.paused) {
-                localStorage.setItem('mytale_music_time', audio.currentTime);
-            }
-        }, 1000);
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
