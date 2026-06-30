@@ -418,38 +418,50 @@ coverFileInput.addEventListener('change', async function(e) {
     if (e.target.files.length > 0) {
         const file = e.target.files[0];
         
-        // Báo hiệu đang xử lý
+        // --- BẢN VÁ 1: LẤY THẺ THÔNG HÀNH (TOKEN) ---
+        const token = localStorage.getItem('mytales_token');
+        if (!token) {
+            alert('Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang!');
+            return;
+        }
+
         coverUploadStatus.textContent = "Đang tải ảnh lên máy chủ...";
         coverUploadStatus.className = 'text-blue-600 text-sm font-bold';
 
-        // Đóng gói ảnh để gửi đi
         const formData = new FormData();
-        formData.append('image', file); // (Nếu backend báo lỗi không nhận ảnh, hãy thử đổi chữ 'image' thành 'file' hoặc 'cover')
+        // --- BẢN VÁ 2: ĐỔI NHÃN THÀNH 'images' CHO KHỚP VỚI BACKEND ---
+        formData.append('images', file); 
 
         try {
-            // Gửi ảnh lên máy chủ Render của bạn (Lưu ý: kiểm tra đúng link /api/upload của bạn)
             const response = await fetch('https://my-tale.onrender.com/api/upload', {
                 method: 'POST',
+                headers: {
+                    // --- BẢN VÁ 3: GẮN TOKEN VÀO YÊU CẦU ---
+                    'Authorization': 'Bearer ' + token
+                },
                 body: formData
             });
             const data = await response.json();
 
-            // Nếu server trả về link thành công
-            const imageUrl = data.url || data.imageUrl; 
-            if (imageUrl) {
-                // Tự động tìm cái ô Link ảnh và điền vào
-                const linkInput = document.querySelector('input[placeholder*="Link ảnh"]');
-                if (linkInput) {
-                    linkInput.value = imageUrl;
-                }
+            if (response.ok) {
+                // --- BẢN VÁ 4: LẤY ĐÚNG TÊN BIẾN 'urls' MÀ BACKEND TRẢ VỀ ---
+                const imageUrl = data.urls[0]; 
                 
-                // Báo thành công
-                coverUploadStatus.textContent = "Tải lên thành công: " + file.name;
-                coverUploadStatus.className = 'text-green-600 text-sm font-bold';
+                if (imageUrl) {
+                    const linkInput = document.querySelector('input[placeholder*="Link ảnh"]');
+                    if (linkInput) {
+                        linkInput.value = imageUrl;
+                    }
+                    coverUploadStatus.textContent = "Tải lên thành công: " + file.name;
+                    coverUploadStatus.className = 'text-green-600 text-sm font-bold';
+                }
+            } else {
+                coverUploadStatus.textContent = "Lỗi: " + data.message;
+                coverUploadStatus.className = 'text-red-600 text-sm font-bold';
             }
         } catch (error) {
             console.error(error);
-            coverUploadStatus.textContent = "Lỗi khi tải ảnh lên server!";
+            coverUploadStatus.textContent = "Lỗi kết nối đến máy chủ!";
             coverUploadStatus.className = 'text-red-600 text-sm font-bold';
         }
     } else {
