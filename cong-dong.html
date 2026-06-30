@@ -195,8 +195,12 @@
             }
 
             // Gọi chuông thông báo nếu mình bị tag
-            if (isTagged && !isMe && msg.createdAt > Date.now() - 5000) {
-                showToastNotification();
+            if (isTagged && !isMe) {
+                // Chuyển đổi thời gian để so sánh (Tin nhắn mới trong vòng 10 giây mới reo chuông)
+                const messageTime = new Date(msg.createdAt).getTime();
+                if (messageTime > Date.now() - 10000) {
+                    showToastNotification();
+                }
             }
 
             let replyHTML = '';
@@ -294,7 +298,8 @@
                             id: msg._id,
                             uuid: msg.uuid,
                             content: msg.content,
-                            replyToText: msg.replyToText
+                            replyToText: msg.replyToText,
+                            createdAt: msg.createdAt // DÒNG MỚI THÊM: Lấy thời gian từ Database
                         }));
                         lastMessageCount = messages.length; 
                     }
