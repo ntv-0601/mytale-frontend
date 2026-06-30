@@ -184,8 +184,6 @@
             const adminToken = localStorage.getItem('mytales_token');
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
             wrapper.id = `message-bubble-${msg.id}`; // DÒNG MỚI THÊM: Gắn định vị
             // Xử lý @Tag (Tô màu tím neon nếu đúng tên mình)
             let displayContent = msg.content;
