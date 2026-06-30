@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tale - Quản Trị Hệ Thống</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "sakura-light": "#FDF4F5",
+                        "sakura-mid": "#F4C7CC",
+                        "sakura-dark": "#E598A3",
+                        "text-main": "#5C4044",
+                        "text-muted": "#8A6E72"
+                    },
+                    fontFamily: {
+                        sans: ["Quicksand", "sans-serif"],
+                        handwriting: ["Dancing Script", "cursive"],
+                    },
+                    boxShadow: {
+                        sakura: "0 4px 14px 0 rgba(229, 152, 163, 0.3)",
+                        glass: "0 8px 32px 0 rgba(229, 152, 163, 0.15)"
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fdf4f5;
+            background-image: radial-gradient(#f4c7cc 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #5c4044;
+            min-height: 100vh;
+        }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(229, 152, 163, 0.15);
+        }
+        .neon-btn {
+            box-shadow: 0 4px 15px rgba(229, 152, 163, 0.4);
+            transition: all 0.3s ease;
+        }
+        .neon-btn:hover {
+            box-shadow: 0 6px 20px rgba(229, 152, 163, 0.6);
+            transform: translateY(-2px);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #f4c7cc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e598a3; }
+        
+        .branch-decoration { position: fixed; z-index: -1; pointer-events: none; opacity: 0.6; filter: drop-shadow(2px 4px 6px rgba(229, 152, 163, 0.3)); }
+        .branch-top-left { top: -20px; left: -20px; width: 300px; transform: rotate(15deg); }
+        .branch-bottom-right { bottom: -20px; right: -20px; width: 250px; transform: rotate(195deg); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start p-4 md:p-8 relative">
+
+    <!-- Trang trí nền -->
+    <svg class="branch-decoration branch-top-left text-[#7e6060]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M -20,0 C 20,40 60,30 100,70 C 130,100 150,80 180,120" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="30" r="12" fill="#F4C7CC" opacity="0.8" />
+      <circle cx="35" cy="35" r="8" fill="#E598A3" />
+      <circle cx="80" cy="50" r="10" fill="#F4C7CC" opacity="0.9" />
+      <circle cx="120" cy="90" r="15" fill="#F4C7CC" opacity="0.7" />
+      <circle cx="123" cy="93" r="7" fill="#E598A3" />
+    </svg>
+
+    <svg class="branch-decoration branch-bottom-right text-[#7e6060]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 200,200 C 160,160 120,170 80,130 C 50,100 30,120 0,80" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="160" cy="170" r="14" fill="#F4C7CC" opacity="0.8" />
+      <circle cx="155" cy="165" r="6" fill="#E598A3" />
+      <circle cx="100" cy="140" r="10" fill="#F4C7CC" opacity="0.9" />
+    </svg>
+
+    <div id="login-section" class="w-full max-w-md glass-panel p-8 md:p-10 rounded-[2rem] relative overflow-hidden transition-all duration-500 mt-20">
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-sakura-mid rounded-full blur-[50px] opacity-60 pointer-events-none"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-sakura-light rounded-full blur-[40px] opacity-70 pointer-events-none"></div>
+        
+        <div class="text-center mb-8 relative z-10">
+            <i class="ph-fill ph-flower-lotus text-6xl text-sakura-dark mb-2 drop-shadow-sm"></i>
+            <h1 class="text-4xl font-bold text-sakura-dark tracking-wide font-handwriting mt-2">HỆ THỐNG</h1>
+            <p class="text-text-muted mt-1 font-semibold">Xác thực quyền quản trị</p>
+        </div>
+
+        <form id="login-form" class="space-y-5 relative z-10">
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-2">Tài khoản</label>
+                <input type="text" id="username" class="w-full px-5 py-3.5 rounded-xl bg-white/70 border border-sakura-mid focus:border-sakura-dark focus:ring-4 focus:ring-sakura-mid/30 text-text-main outline-none transition-all shadow-sm placeholder-text-muted/50" placeholder="Nhập tài khoản...">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-2">Mật khẩu</label>
+                <input type="password" id="password" class="w-full px-5 py-3.5 rounded-xl bg-white/70 border border-sakura-mid focus:border-sakura-dark focus:ring-4 focus:ring-sakura-mid/30 text-text-main outline-none transition-all shadow-sm placeholder-text-muted/50" placeholder="••••••••">
+            </div>
+            
+            <div id="error-msg" class="hidden text-rose-600 text-sm font-bold text-center bg-rose-50 py-3 rounded-xl border border-rose-200"></div>
+
+            <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-6 text-lg tracking-wide">
+                TRUY CẬP KHO LƯU TRỮ
+            </button>
+        </form>
+    </div>
+
+    <div id="admin-dashboard" class="hidden w-full max-w-7xl glass-panel p-6 md:p-10 rounded-[2.5rem] relative z-10">
+        
+        <!-- Header Dashboard -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-sakura-mid/40 pb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <i class="ph-fill ph-flower-lotus text-4xl text-sakura-dark drop-shadow-sm"></i>
+                <h2 class="text-3xl sm:text-4xl font-bold text-sakura-dark font-handwriting">Bảng Điều Khiển Hệ Thống</h2>
+            </div>
+            <button onclick="logout()" class="text-text-muted hover:text-rose-600 transition-colors flex items-center gap-2 font-bold bg-white/50 px-4 py-2 rounded-xl shadow-sm border border-sakura-mid/30">
+                <i class="ph-bold ph-sign-out text-xl"></i> Đăng xuất
+            </button>
+        </div>
+
+        <!-- Layout chính của Dashboard (1 cột nhỏ bên trái, 1 cột lớn bên phải) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Cột trái: Thêm Truyện Mới -->
+            <div class="bg-white/60 p-6 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden h-fit">
+                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-plus-circle text-sakura-dark"></i> Thêm Truyện Mới
+                </h3>
+                <form id="add-story-form" class="space-y-4 relative z-10">
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện</label>
+                        <input type="text" id="story-title" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Định dạng</label>
+                            <select id="story-format" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                                <option value="truyen-chu">Truyện Chữ</option>
+                                <option value="truyen-tranh">Truyện Tranh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tác giả</label>
+                            <input type="text" id="story-author" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
+                        
+                        <div class="flex items-center gap-3 mb-2">
+                            <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
+                                <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
+                            </button>
+                            <input type="file" id="cover-file-input" accept="image/*" class="hidden">
+                            <span id="cover-upload-status" class="text-sm font-bold"></span>
+                        </div>
+
+                        <input type="text" id="story-image" required placeholder="Link ảnh sẽ tự động hiện ở đây sau khi tải lên..." class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Thể loại (cách nhau dấu phẩy)</label>
+                        <input type="text" id="story-tags" placeholder="VD: hoc-duong, tinh-cam" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Mô tả ngắn</label>
+                        <textarea id="story-desc" rows="3" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-4 transition-all">
+                        XUẤT BẢN TRUYỆN
+                    </button>
+                    <div id="add-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col">
+                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-book-open-text text-sakura-dark"></i> Viết Chương Mới
+                </h3>
+                
+                <form id="add-chapter-form" class="space-y-5 relative z-10 flex-grow flex flex-col">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Chọn bộ truyện</label>
+                            <select id="chapter-story-id" required class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
+                                <option value="">-- Đang tải danh sách truyện... --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tiêu đề chương</label>
+                            <input type="text" id="chapter-title" required placeholder="VD: Chương 1: Lần đầu gặp gỡ" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow flex flex-col">
+                        <label class="block text-sm font-bold text-text-muted mb-2">Nội dung chương (Hỗ trợ thẻ HTML như &lt;p&gt;, &lt;br&gt;)</label>
+                        <!-- Ô textarea được mở rộng rất nhiều dòng -->
+                        <textarea id="chapter-content" required rows="20" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed flex-grow resize-y" placeholder="<p>Bầu trời tháng Chín trong vắt...</p>"></textarea>
+                    </div>
+
+                    <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4">
+                        <label class="block text-sm font-bold text-text-muted mb-2">Link ảnh (Dành cho truyện tranh)</label>
+                        
+                        <div class="flex items-center gap-3 mb-3">
+                            <button type="button" id="btn-upload-img" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
+                                <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
+                            </button>
+                            <input type="file" id="file-input" multiple accept="image/*" class="hidden">
+                            <span id="upload-status" class="text-sm font-bold"></span>
+                        </div>
+
+                        <textarea id="chapter-images" rows="4" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed text-sm" placeholder="Các link ảnh sẽ tự động xuất hiện ở đây sau khi tải lên..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all">
+                        XUẤT BẢN CHƯƠNG TRUYỆN
+                    </button>
+                    <div id="chapter-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="bg-rose-50/80 p-6 md:p-8 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden mt-8">
+            <h3 class="text-2xl font-bold text-rose-600 mb-6 flex items-center gap-2 font-handwriting">
+                <i class="ph-fill ph-trash text-rose-500"></i> Quản Lý & Xóa Dữ Liệu
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                <!-- Xóa Truyện -->
+                <div class="p-6 bg-white/70 border border-rose-100 rounded-xl flex flex-col justify-between shadow-sm">
+                    <div>
+                        <label class="block text-sm font-bold text-text-main mb-2">Xóa toàn bộ 1 bộ truyện</label>
+                        <select id="delete-story-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium"></select>
+                    </div>
+                    <button onclick="deleteStory()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <i class="ph-bold ph-trash text-lg"></i> XÓA TRUYỆN NÀY
+                    </button>
+                </div>
+
+                <!-- Xóa Chương -->
+                <div class="p-6 bg-white/70 border border-rose-100 rounded-xl flex flex-col justify-between shadow-sm">
+                    <div>
+                        <label class="block text-sm font-bold text-text-main mb-2">Xóa 1 chương của truyện</label>
+                        <select id="select-story-for-chapter" onchange="loadChaptersForDelete()" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none mb-4 truncate font-medium">
+                            <option value="">-- Chọn truyện trước --</option>
+                        </select>
+                        <select id="delete-chapter-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium">
+                            <option value="">-- Chờ chọn truyện --</option>
+                        </select>
+                    </div>
+                    <button onclick="deleteChapter()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <i class="ph-bold ph-trash text-lg"></i> XÓA CHƯƠNG NÀY
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Xử lý sự kiện khi bấm nút ĐĂNG TRUYỆN
+        const addStoryForm = document.getElementById('add-story-form');
+        const addMsg = document.getElementById('add-msg');
+
+        addStoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const token = localStorage.getItem('mytales_token');
+            if (!token) {
+                alert('Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang!');
+                return;
+            }
+
+            const rawTags = document.getElementById('story-tags').value;
+            const newStoryData = {
+                title: document.getElementById('story-title').value,
+                format: document.getElementById('story-format').value,
+                author: document.getElementById('story-author').value,
+                image: document.getElementById('story-image').value,
+                desc: document.getElementById('story-desc').value,
+                tags: rawTags.split(',').map(tag => tag.trim()).filter(tag => tag !== "")
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/stories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token 
+                    },
+                    body: JSON.stringify(newStoryData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addMsg.innerText = "🎉 Đăng truyện mới thành công!";
+                    addMsg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+                    addStoryForm.reset(); 
+                    loadStoriesForDropdown(); // Cập nhật lại list truyện ngay lập tức
+                } else {
+                    addMsg.innerText = "❌ " + (data.message || "Có lỗi xảy ra");
+                    addMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+                }
+            } catch (error) {
+                addMsg.innerText = "❌ Lỗi kết nối đến máy chủ!";
+                addMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            }
+        });
+
+        // Xử lý đăng nhập
+        const loginForm = document.getElementById('login-form');
+        const loginSection = document.getElementById('login-section');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const errorMsg = document.getElementById('error-msg');
+
+        if (localStorage.getItem('mytales_token')) {
+            showDashboard();
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('mytales_token', data.token);
+                    showDashboard();
+                } else {
+                    errorMsg.innerText = data.message;
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorMsg.innerText = "Lỗi kết nối đến máy chủ!";
+                errorMsg.classList.remove('hidden');
+            }
+        });
+
+        function showDashboard() {
+            loginSection.classList.add('hidden');
+            adminDashboard.classList.remove('hidden');
+            document.body.classList.remove('items-center'); // Cho form dịch lên trên
+            loadStoriesForDropdown(); 
+        }
+
+        function logout() {
+            localStorage.removeItem('mytales_token');
+            location.reload();
+        }
+
+        // Tải danh sách truyện
+        let globalStories = []; 
+
+        async function loadStoriesForDropdown() {
+            try {
+                const response = await fetch('http://localhost:5000/api/stories');
+                globalStories = await response.json();
+                
+                const selectAddChap = document.getElementById('chapter-story-id');
+                const selectDelStory = document.getElementById('delete-story-id');
+                const selectStoryForChap = document.getElementById('select-story-for-chapter');
+                
+                const defaultOption = '<option value="">-- Chọn bộ truyện --</option>';
+                selectAddChap.innerHTML = defaultOption;
+                selectDelStory.innerHTML = defaultOption;
+                selectStoryForChap.innerHTML = defaultOption;
+                
+                globalStories.forEach(story => {
+                    const opt = `<option value="${story._id}">${story.title}</option>`;
+                    selectAddChap.innerHTML += opt;
+                    selectDelStory.innerHTML += opt;
+                    selectStoryForChap.innerHTML += opt;
+                });
+            } catch (error) {
+                console.error("Lỗi:", error);
+            }
+        }
+
+        // Xử lý nút XUẤT BẢN CHƯƠNG TRUYỆN
+        const addChapterForm = document.getElementById('add-chapter-form');
+        const chapterMsg = document.getElementById('chapter-msg');
+        
+        // TẢI ẢNH TỪ MÁY TÍNH
+        const btnUpload = document.getElementById('btn-upload-img');
+        const fileInput = document.getElementById('file-input');
+        const uploadStatus = document.getElementById('upload-status');
+        const chapterImages = document.getElementById('chapter-images');
+
+        btnUpload.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async () => {
+            if (fileInput.files.length === 0) return;
+
+            const token = localStorage.getItem('mytales_token');
+            if (!token) return alert('Vui lòng đăng nhập lại!');
+
+            const formData = new FormData();
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('images', fileInput.files[i]);
+            }
+
+            uploadStatus.innerText = "⏳ Đang tải lên...";
+            uploadStatus.className = "text-sm font-bold text-amber-600";
+            btnUpload.disabled = true;
+            btnUpload.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch('http://localhost:5000/api/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData 
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    const newLinks = data.urls.join('\n');
+                    const currentText = chapterImages.value;
+                    chapterImages.value = currentText ? currentText + '\n' + newLinks : newLinks;
+                    
+                    uploadStatus.innerText = "✅ Tải ảnh thành công!";
+                    uploadStatus.className = "text-sm font-bold text-green-600";
+                } else {
+                    uploadStatus.innerText = "❌ Lỗi: " + data.message;
+                    uploadStatus.className = "text-sm font-bold text-rose-600";
+                }
+            } catch (error) {
+                uploadStatus.innerText = "❌ Lỗi kết nối máy chủ!";
+                uploadStatus.className = "text-sm font-bold text-rose-600";
+            } finally {
+                btnUpload.disabled = false;
+                btnUpload.classList.remove('opacity-50', 'cursor-not-allowed');
+                fileInput.value = ""; 
+                setTimeout(() => uploadStatus.innerText = "", 4000);
+            }
+        });
+
+        // Xử lý submit Chương mới
+        addChapterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('mytales_token');
+            if (!token) return alert('Phiên đăng nhập hết hạn!');
+
+            const storyId = document.getElementById('chapter-story-id').value;
+            const title = document.getElementById('chapter-title').value;
+            const content = document.getElementById('chapter-content').value;
+            
+            // Lấy thêm mảng ảnh từ ô textarea ảnh
+            const rawImages = document.getElementById('chapter-images').value;
+            const images = rawImages.split('\n').map(img => img.trim()).filter(img => img !== "");
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/stories/${storyId}/chapters`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    // Gửi cả title, content và images
+                    body: JSON.stringify({ title, content, images })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    chapterMsg.innerText = "🎉 " + data.message;
+                    chapterMsg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+                    // Reset form sau khi đăng
+                    document.getElementById('chapter-title').value = '';
+                    document.getElementById('chapter-content').value = '';
+                    document.getElementById('chapter-images').value = '';
+                } else {
+                    chapterMsg.innerText = "❌ " + data.message;
+                    chapterMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+                }
+            } catch (error) {
+                chapterMsg.innerText = "❌ Lỗi kết nối đến máy chủ!";
+                chapterMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            }
+        });
+
+        // Chọn Truyện để load chương
+        function loadChaptersForDelete() {
+            const storyId = document.getElementById('select-story-for-chapter').value;
+            const selectChap = document.getElementById('delete-chapter-id');
+            selectChap.innerHTML = '<option value="">-- Chọn chương cần xóa --</option>';
+            
+            if(!storyId) return;
+            
+            const story = globalStories.find(s => s._id === storyId);
+            if(story && story.chaptersData) {
+                story.chaptersData.forEach(chap => {
+                    selectChap.innerHTML += `<option value="${chap._id}">${chap.title}</option>`;
+                });
+            }
+        }
+
+        // API Xóa Truyện
+        async function deleteStory() {
+            const storyId = document.getElementById('delete-story-id').value;
+            if(!storyId) return alert("Vui lòng chọn truyện cần xóa!");
+            if(!confirm("Bạn có chắc chắn muốn XÓA TOÀN BỘ truyện này không? Không thể hoàn tác!")) return;
+
+            const token = localStorage.getItem('mytales_token');
+            try {
+                const response = await fetch(`http://localhost:5000/api/stories/${storyId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if(response.ok) {
+                    alert("Xóa truyện thành công!");
+                    loadStoriesForDropdown();
+                }
+            } catch (e) { alert("Lỗi kết nối!"); }
+        }
+
+        // API Xóa Chương
+        async function deleteChapter() {
+            const storyId = document.getElementById('select-story-for-chapter').value;
+            const chapterId = document.getElementById('delete-chapter-id').value;
+            if(!storyId || !chapterId) return alert("Vui lòng chọn đủ truyện và chương!");
+            if(!confirm("Bạn có chắc chắn muốn xóa chương này?")) return;
+
+            const token = localStorage.getItem('mytales_token');
+            try {
+                const response = await fetch(`http://localhost:5000/api/stories/${storyId}/chapters/${chapterId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if(response.ok) {
+                    alert("Xóa chương thành công!");
+                    loadStoriesForDropdown();
+                    document.getElementById('delete-chapter-id').innerHTML = '<option value="">-- Chọn chương cần xóa --</option>';
+                }
+            } catch (e) { alert("Lỗi kết nối!"); }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,726 @@
+<!-- STREAMING_CHUNK:Khởi tạo cấu trúc cơ bản và phần đầu... -->
+<!doctype html>
+<html lang="vi" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Tale - Vùng Trời Thanh Xuân</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Quicksand (Phần thân) & Dancing Script (Logo/Điểm nhấn) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Phosphor Icons cho các thành phần giao diện -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- STREAMING_CHUNK:Cấu hình Tailwind và Theme... -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              "sakura-light": "#FDF4F5",
+              "sakura-mid": "#F4C7CC",
+              "sakura-dark": "#E598A3",
+              "text-main": "#5C4044",
+              "text-muted": "#8A6E72",
+              
+              // Dark mode colors
+              "night-bg": "#0f172a",
+              "night-surface": "#1e293b",
+              "night-border": "#334155",
+              "night-text": "#e2e8f0",
+              "night-text-muted": "#94a3b8",
+              "night-accent": "#60a5fa"
+            },
+            fontFamily: {
+              sans: ["Quicksand", "sans-serif"],
+              handwriting: ["Dancing Script", "cursive"],
+            },
+            boxShadow: {
+              sakura: "0 4px 14px 0 rgba(229, 152, 163, 0.2)",
+              night: "0 4px 14px 0 rgba(0, 0, 0, 0.4)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- STREAMING_CHUNK:Thêm CSS tùy chỉnh cho các hiệu ứng và Layout... -->
+    <style>
+      body {
+        background-color: #fdf4f5;
+        background-image: radial-gradient(#f4c7cc 0.5px, transparent 0.5px);
+        background-size: 24px 24px;
+        color: #5c4044;
+        overflow-x: hidden;
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+      
+      body.dark {
+        background-color: #0f172a;
+        background-image: radial-gradient(#334155 0.5px, transparent 0.5px);
+        color: #e2e8f0;
+      }
+
+      #lightning-bg { position: fixed; inset: 0; z-index: -2; pointer-events: none; background-color: transparent; }
+      body.dark #lightning-bg { animation: lightning 10s infinite; }
+      @keyframes lightning {
+        0%, 95%, 98%, 100% { background-color: transparent; }
+        96% { background-color: rgba(255, 255, 255, 0.05); }
+        97% { background-color: rgba(255, 255, 255, 0.1); }
+      }
+
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #f4c7cc; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #e598a3; }
+      body.dark ::-webkit-scrollbar-thumb { background: #475569; }
+      body.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+      .glass-header { background: rgba(253, 244, 245, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(244, 199, 204, 0.4); }
+      body.dark .glass-header { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(51, 65, 85, 0.8); }
+
+      .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); }
+      body.dark .glass-panel { background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+      .dropdown-menu { opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+      .group:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+
+      #effects-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; overflow: hidden; }
+
+      .petal { position: absolute; background: linear-gradient(135deg, rgba(255, 192, 203, 0.8) 0%, rgba(255, 182, 193, 0.5) 100%); border-radius: 15px 0px 15px 0px; box-shadow: 0 0 5px rgba(255, 182, 193, 0.3); animation: fall linear forwards; }
+      @keyframes fall { 0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(105vh) translateX(var(--drift)) rotate(var(--spin)); opacity: 0; } }
+
+      .drop { position: absolute; width: 2px; background: linear-gradient(to bottom, transparent, rgba(148, 163, 184, 0.8)); animation: rainFall linear infinite; }
+      @keyframes rainFall { 0% { top: -10%; transform: translateY(0) rotate(10deg); } 100% { top: 110%; transform: translateY(100vh) rotate(10deg); } }
+
+      .story-card { transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+      .story-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(229, 152, 163, 0.3); }
+      body.dark .story-card:hover { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
+
+      .branch-decoration { position: fixed; z-index: -1; pointer-events: none; opacity: 0.7; filter: drop-shadow(2px 4px 6px rgba(229, 152, 163, 0.2)); transition: opacity 0.5s ease; }
+      body.dark .branch-decoration { opacity: 0.15; filter: none; }
+      .branch-top-left { top: -20px; left: -20px; width: 300px; transform: rotate(15deg); }
+      .branch-bottom-right { bottom: -20px; right: -20px; width: 250px; transform: rotate(195deg); }
+
+      .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
+      .view-section.active { display: block; }
+
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* Styling đặc biệt cho nội dung đọc truyện */
+      .reading-content p { margin-bottom: 1.5rem; text-indent: 1.5rem; font-size: 1.125rem; line-height: 1.8; }
+      .reading-content img { border-radius: 0.5rem; margin-bottom: 1rem; width: 100%; height: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+  </head>
+  <body class="font-sans antialiased relative min-h-screen flex flex-col transition-colors duration-500">
+    
+    <!-- STREAMING_CHUNK:Thêm các yếu tố trang trí nền... -->
+    <div id="lightning-bg"></div>
+    <div id="effects-container"></div>
+
+    <svg class="branch-decoration branch-top-left text-[#7e6060] dark:text-[#94a3b8]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M -20,0 C 20,40 60,30 100,70 C 130,100 150,80 180,120" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="30" r="12" fill="#F4C7CC" opacity="0.8" class="dark:fill-slate-600" />
+      <circle cx="35" cy="35" r="8" fill="#E598A3" class="dark:fill-slate-500" />
+      <circle cx="80" cy="50" r="10" fill="#F4C7CC" opacity="0.9" class="dark:fill-slate-600" />
+      <circle cx="120" cy="90" r="15" fill="#F4C7CC" opacity="0.7" class="dark:fill-slate-600" />
+      <circle cx="123" cy="93" r="7" fill="#E598A3" class="dark:fill-slate-500" />
+      <ellipse cx="60" cy="20" rx="8" ry="4" fill="#a8b89e" transform="rotate(30 60 20)" class="dark:fill-slate-700" />
+      <ellipse cx="100" cy="60" rx="10" ry="5" fill="#a8b89e" transform="rotate(60 100 60)" class="dark:fill-slate-700" />
+    </svg>
+
+    <svg class="branch-decoration branch-bottom-right text-[#7e6060] dark:text-[#94a3b8]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 200,200 C 160,160 120,170 80,130 C 50,100 30,120 0,80" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="160" cy="170" r="14" fill="#F4C7CC" opacity="0.8" class="dark:fill-slate-600" />
+      <circle cx="155" cy="165" r="6" fill="#E598A3" class="dark:fill-slate-500" />
+      <circle cx="100" cy="140" r="10" fill="#F4C7CC" opacity="0.9" class="dark:fill-slate-600" />
+      <ellipse cx="130" cy="180" rx="9" ry="4.5" fill="#a8b89e" transform="rotate(-30 130 180)" class="dark:fill-slate-700" />
+    </svg>
+
+    <!-- STREAMING_CHUNK:Thanh Header... -->
+    <header class="glass-header sticky top-0 z-40 w-full transition-all duration-300">
+      <div class="container mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
+        <a href="#" onclick="navigate('home')" class="flex items-center gap-2 group cursor-pointer">
+          <i class="ph-fill ph-flower-lotus text-sakura-dark dark:text-night-accent text-3xl group-hover:rotate-45 transition-transform duration-500"></i>
+          <span class="font-handwriting text-3xl font-bold text-sakura-dark dark:text-night-accent tracking-wide">My Tale</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-6 lg:gap-8 font-medium">
+          <button onclick="navigate('home')" class="text-text-main dark:text-night-text hover:text-sakura-dark dark:hover:text-night-accent transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-[2px] after:bg-sakura-dark dark:after:bg-night-accent after:transition-all hover:after:w-full">Trang chủ</button>
+
+          <div class="relative group py-2">
+            <button class="flex items-center gap-1 text-text-main dark:text-night-text hover:text-sakura-dark dark:hover:text-night-accent transition-colors">
+              Thư viện truyện <i class="ph ph-caret-down text-sm transition-transform group-hover:rotate-180"></i>
+            </button>
+            <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 bg-white dark:bg-night-surface border border-sakura-mid dark:border-night-border rounded-xl shadow-sakura dark:shadow-night py-2 overflow-hidden z-50">
+              <button onclick="navigate('truyen-chu')" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-sakura-light dark:hover:bg-slate-800 text-text-main dark:text-night-text hover:text-sakura-dark dark:hover:text-night-accent transition-colors">
+                <i class="ph ph-book-open text-lg"></i> Truyện chữ
+              </button>
+              <button onclick="navigate('truyen-tranh')" class="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-sakura-light dark:hover:bg-slate-800 text-text-main dark:text-night-text hover:text-sakura-dark dark:hover:text-night-accent transition-colors">
+                <i class="ph ph-image text-lg"></i> Truyện tranh
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <div class="flex items-center gap-3 md:gap-4">
+          <button id="theme-toggle" class="p-2 rounded-full text-text-main dark:text-night-text hover:bg-sakura-light dark:hover:bg-slate-800 transition-colors shadow-sm bg-white/50 dark:bg-night-surface/50 border border-sakura-mid/30 dark:border-night-border">
+            <i id="theme-icon" class="ph-fill ph-moon text-xl"></i>
+          </button>
+          <button onclick="navigate('tac-gia')" class="flex items-center gap-2 bg-sakura-dark dark:bg-night-accent text-white dark:text-slate-900 px-4 md:px-5 py-2 rounded-full font-medium hover:bg-[#d48895] dark:hover:bg-blue-400 shadow-sakura dark:shadow-none transition-all transform hover:scale-105">
+            <i class="ph ph-pen-nib"></i>
+            <span class="hidden sm:inline">Khu tác giả</span>
+          </button>
+          <button id="mobile-menu-btn" class="md:hidden text-text-main dark:text-night-text text-2xl p-1">
+            <i class="ph ph-list"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-night-surface border-t border-sakura-mid/30 dark:border-night-border px-4 py-2 shadow-lg absolute w-full">
+         <button onclick="navigate('home')" class="block w-full text-left py-3 text-text-main dark:text-night-text font-medium border-b border-sakura-light dark:border-slate-800">Trang chủ</button>
+         <button onclick="navigate('truyen-chu')" class="block w-full text-left py-3 text-text-main dark:text-night-text font-medium border-b border-sakura-light dark:border-slate-800">Truyện chữ</button>
+         <button onclick="navigate('truyen-tranh')" class="block w-full text-left py-3 text-text-main dark:text-night-text font-medium border-b border-sakura-light dark:border-slate-800">Truyện tranh</button>
+         <button onclick="navigate('tac-gia')" class="block w-full text-left py-3 text-text-main dark:text-night-text font-medium">Khu tác giả</button>
+      </div>
+    </header>
+
+    <!-- STREAMING_CHUNK:Cấu trúc nội dung chính (Trang chủ & Thư viện)... -->
+    <main class="flex-grow container mx-auto px-4 md:px-8 py-8 relative z-10">
+      
+      <!-- VIEW: TRANG CHỦ & THƯ VIỆN -->
+      <div id="view-stories" class="view-section active">
+        <section id="hero-banner" class="relative glass-panel rounded-3xl p-8 md:p-12 mb-12 flex flex-col-reverse md:flex-row items-center gap-8 overflow-hidden shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border max-w-6xl mx-auto">
+          <div class="absolute -top-20 -right-20 w-64 h-64 bg-sakura-light dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"></div>
+          
+          <div class="flex-1 text-center md:text-left z-10">
+            <h1 class="font-handwriting text-4xl md:text-5xl lg:text-6xl text-text-main dark:text-night-text leading-tight mb-4">
+              Thanh xuân này,<br />
+              <span class="text-sakura-dark dark:text-night-accent">viết nên câu chuyện của chính mình</span>
+            </h1>
+            <p class="text-text-muted dark:text-night-text-muted text-lg mb-8 max-w-lg mx-auto md:mx-0">
+              Khám phá hàng ngàn tựa truyện chữ và truyện tranh lãng mạn, học đường. Đắm chìm vào những trang sách mang hương vị của tuổi trẻ.
+            </p>
+            <div class="flex gap-4 justify-center md:justify-start">
+              <button onclick="document.getElementById('search-input').focus()" class="bg-sakura-dark dark:bg-night-accent text-white dark:text-slate-900 px-8 py-3 rounded-full font-semibold shadow-sakura hover:bg-[#d48895] dark:hover:bg-blue-400 transition-colors">
+                Bắt đầu Đọc
+              </button>
+            </div>
+          </div>
+          <div class="flex-1 flex justify-center z-10 relative">
+            <div class="relative w-64 h-80 rounded-2xl bg-gradient-to-tr from-sakura-mid dark:from-slate-700 to-white dark:to-night-surface shadow-xl flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform duration-500 overflow-hidden border-4 border-white dark:border-night-border">
+              <img src="AVT/1.jpg" onerror="this.src='https://placehold.co/400x600/f4c7cc/5c4044?text=My+Tale'" alt="Ảnh của tôi" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-sakura-dark/40 dark:from-blue-900/40 to-transparent"></div>
+              <p class="absolute bottom-4 left-0 right-0 text-center text-white font-bold font-handwriting text-2xl drop-shadow-md">Năm tháng ấy</p>
+            </div>
+            <div class="absolute w-64 h-80 rounded-2xl bg-sakura-light dark:bg-slate-800 shadow-lg transform -rotate-6 -z-10 border border-sakura-mid/50 dark:border-slate-700"></div>
+          </div>
+        </section>
+
+        <div id="section-header" class="max-w-6xl mx-auto mb-6 hidden text-center">
+            <h2 id="section-title" class="font-handwriting text-4xl text-sakura-dark dark:text-night-accent mb-2">Thư viện</h2>
+            <p id="section-desc" class="text-text-muted dark:text-night-text-muted">Khám phá các tựa truyện yêu thích.</p>
+        </div>
+
+        <div class="max-w-6xl mx-auto mb-10">
+            <div class="glass-panel p-3 md:p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center border border-white dark:border-night-border">
+                <div class="relative w-full md:w-2/3">
+                    <input type="text" id="search-input" placeholder="Tìm kiếm tên truyện, tác giả..." class="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-sakura-mid/50 dark:border-slate-600 focus:outline-none focus:border-sakura-dark dark:focus:border-night-accent focus:ring-2 focus:ring-sakura-light dark:focus:ring-blue-900/50 text-text-main dark:text-night-text transition-all">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-night-text-muted text-xl"></i>
+                </div>
+                
+                <button id="filter-toggle-btn" class="w-full md:w-auto px-6 py-3 bg-sakura-light dark:bg-slate-800 text-sakura-dark dark:text-night-accent border border-sakura-mid/50 dark:border-slate-600 font-semibold rounded-xl transition-colors hover:bg-sakura-mid/30 dark:hover:bg-slate-700 flex items-center justify-center gap-2">
+                    <i class="ph ph-faders text-lg"></i> Bộ lọc
+                </button>
+            </div>
+
+            <div id="filter-panel" class="hidden mt-4 glass-panel p-6 rounded-2xl shadow-sm border border-white dark:border-night-border transition-all">
+                <h3 class="font-bold text-lg mb-4 text-text-main dark:text-night-text border-b border-sakura-mid/30 dark:border-slate-700 pb-2">Lọc Truyện</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-text-muted dark:text-night-text-muted mb-2 text-sm uppercase tracking-wider">Định dạng</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="truyen-chu" class="filter-format accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Truyện Chữ
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="truyen-tranh" class="filter-format accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Truyện Tranh
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-text-muted dark:text-night-text-muted mb-2 text-sm uppercase tracking-wider">Trạng thái</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="hoan-thanh" class="filter-status accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Hoàn Thành
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="dang-ra" class="filter-status accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Đang Ra
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-text-muted dark:text-night-text-muted mb-2 text-sm uppercase tracking-wider">Chủ đề</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="hoc-duong" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Học Đường
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="tinh-cam" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Tình Cảm
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
+                                <input type="checkbox" value="hai-huoc" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Hài Hước
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="applyFilters()" class="px-6 py-2 bg-sakura-dark dark:bg-night-accent text-white dark:text-slate-900 font-semibold rounded-lg hover:opacity-90 transition-opacity">Áp dụng</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto">
+            <div id="story-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Nội dung render qua JS -->
+            </div>
+            
+            <div id="no-results" class="hidden text-center py-20">
+                <i class="ph-fill ph-leaf text-5xl text-sakura-mid dark:text-slate-600 mb-4 inline-block opacity-70"></i>
+                <p class="text-xl font-medium text-text-muted dark:text-night-text-muted">Không tìm thấy truyện phù hợp trong cơn mưa này.</p>
+            </div>
+        </div>
+      </div>
+
+      <!-- STREAMING_CHUNK:Thêm Khung giao diện ĐỌC TRUYỆN MỚI... -->
+      <!-- VIEW: ĐỌC TRUYỆN -->
+      <div id="view-read-story" class="view-section hidden max-w-4xl mx-auto">
+          <div class="glass-panel rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border relative mt-4">
+              
+              <!-- Header của khu vực đọc -->
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-sakura-mid/30 dark:border-slate-700 pb-4 mb-8 gap-4">
+                  <button onclick="navigate('back')" class="flex items-center gap-2 text-sakura-dark dark:text-night-accent hover:text-text-main dark:hover:text-white transition-colors font-medium bg-sakura-light/50 dark:bg-slate-800/50 px-4 py-2 rounded-xl">
+                      <i class="ph-bold ph-arrow-left"></i> Trở về
+                  </button>
+                  <div class="text-right flex-1 w-full">
+                      <h2 id="read-story-title" class="font-bold text-xl md:text-2xl text-text-main dark:text-night-text line-clamp-1">Tên Truyện</h2>
+                      <p id="read-story-author" class="text-sm text-text-muted dark:text-night-text-muted">Tác giả</p>
+                  </div>
+              </div>
+
+              <!-- Tiêu đề Chương -->
+              <div class="text-center mb-8">
+                  <h3 id="read-chapter-title" class="font-handwriting text-3xl md:text-4xl font-bold text-sakura-dark dark:text-night-accent">Chương 1</h3>
+              </div>
+
+              <!-- Nội dung Truyện (Chữ hoặc Tranh sẽ đổ vào đây) -->
+              <div id="read-content" class="reading-content text-text-main dark:text-night-text">
+                  <!-- JS sẽ render nội dung -->
+              </div>
+
+              <!-- Điều hướng Chương dưới cùng -->
+              <div class="flex items-center justify-between mt-12 pt-6 border-t border-sakura-mid/30 dark:border-slate-700">
+                  <button id="btn-prev-chap" onclick="changeChapter(-1)" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-sakura-light dark:bg-slate-800 text-sakura-dark dark:text-night-accent font-medium hover:bg-sakura-mid/30 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      <i class="ph-bold ph-caret-left"></i> <span class="hidden sm:inline">Chương trước</span>
+                  </button>
+                  
+                  <span id="chap-indicator" class="text-text-muted dark:text-night-text-muted font-medium text-sm">1 / 1</span>
+                  
+                  <button id="btn-next-chap" onclick="changeChapter(1)" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-sakura-dark dark:bg-night-accent text-white dark:text-slate-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                      <span class="hidden sm:inline">Chương sau</span> <i class="ph-bold ph-caret-right"></i>
+                  </button>
+              </div>
+
+          </div>
+      </div>
+
+      <!-- STREAMING_CHUNK:Giao diện Khu Tác Giả... -->
+      <!-- VIEW: TÁC GIẢ -->
+      <div id="view-author" class="view-section max-w-4xl mx-auto">
+          <div class="glass-panel rounded-3xl overflow-hidden shadow-lg border border-white dark:border-night-border mt-4">
+              <div class="h-48 md:h-64 bg-gradient-to-r from-sakura-mid to-sakura-dark dark:from-slate-800 dark:to-blue-900 relative">
+                  <div class="absolute -bottom-16 left-8 md:left-1/2 md:-translate-x-1/2">
+                      <div class="w-32 h-32 rounded-full border-4 border-white dark:border-night-surface overflow-hidden bg-white shadow-md">
+                          <img src="AVT/IRO.jpg" onerror="this.src='https://placehold.co/400x400/e598a3/ffffff?text=Vinh+Ng'" alt="Avatar" class="w-full h-full object-cover">
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="pt-20 pb-10 px-8 md:text-center">
+                  <h2 class="text-4xl font-handwriting font-bold text-sakura-dark dark:text-night-accent mb-2">Vinh Ng</h2>
+                  <p class="text-text-muted dark:text-night-text-muted font-medium mb-6"><i class="ph-fill ph-pen-nib mr-1"></i>Người dệt mộng thanh xuân</p>
+                  
+                  <div class="flex flex-wrap gap-4 justify-start md:justify-center mb-10">
+                      <div class="bg-sakura-light dark:bg-slate-800 border border-sakura-mid/30 dark:border-slate-700 px-6 py-3 rounded-2xl text-center shadow-sm">
+                          <span class="block font-bold text-xl text-text-main dark:text-white">15</span>
+                          <span class="text-xs uppercase tracking-wider text-text-muted dark:text-night-text-muted mt-1">Tác phẩm</span>
+                      </div>
+                      <div class="bg-sakura-light dark:bg-slate-800 border border-sakura-mid/30 dark:border-slate-700 px-6 py-3 rounded-2xl text-center shadow-sm">
+                          <span class="block font-bold text-xl text-text-main dark:text-white">82K</span>
+                          <span class="text-xs uppercase tracking-wider text-text-muted dark:text-night-text-muted mt-1">Lượt đọc</span>
+                      </div>
+                      <div class="bg-sakura-light dark:bg-slate-800 border border-sakura-mid/30 dark:border-slate-700 px-6 py-3 rounded-2xl text-center shadow-sm">
+                          <span class="block font-bold text-xl text-text-main dark:text-white">4.9</span>
+                          <span class="text-xs uppercase tracking-wider text-text-muted dark:text-night-text-muted mt-1">Đánh giá</span>
+                      </div>
+                  </div>
+
+                  <div class="text-left md:text-center space-y-4 leading-relaxed max-w-2xl mx-auto text-text-main dark:text-night-text text-lg">
+                      <p>Xin chào, mình là chủ nhân của <strong class="text-sakura-dark dark:text-night-accent font-handwriting text-2xl">My Tale</strong>. Nơi đây là góc nhỏ mình lưu giữ những kỷ niệm, những câu chuyện tình cảm học đường mộng mơ mà mình sáng tác.</p>
+                      <p>Dù ngoài kia có giông bão hay nắng gắt, mình hi vọng khi bước vào My Tale, bạn sẽ tìm thấy sự bình yên, tiếng cười và một chút ngọt ngào của tuổi trẻ.</p>
+                      <p>Cảm ơn bạn đã ghé thăm. Hãy pha một tách trà, nghe một bản nhạc nhẹ và bắt đầu đọc truyện nhé!</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </main>
+
+    <!-- STREAMING_CHUNK:Footer và Khởi tạo Dữ liệu (Bao gồm nội dung Chương)... -->
+    <footer class="glass-panel border-t border-sakura-mid/50 dark:border-night-border mt-auto relative z-10">
+      <div class="container mx-auto px-4 md:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <i class="ph-fill ph-flower-lotus text-sakura-dark dark:text-night-accent text-2xl"></i>
+          <span class="font-handwriting text-2xl font-bold text-sakura-dark dark:text-night-accent">My Tale</span>
+        </div>
+        <p class="text-sm text-text-muted dark:text-night-text-muted text-center md:text-left">
+          © 2026 My Tale. Nơi lưu giữ những câu chuyện thanh xuân.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // --- 1. Dữ liệu Truyện (Đã thêm Nội dung chương) ---
+      let stories = []
+      // Hàm gọi API lấy dữ liệu từ Backend
+        async function fetchStoriesFromBackend() {
+            try {
+                // Gửi yêu cầu đến máy chủ của bạn
+                const response = await fetch('http://localhost:5000/api/stories');
+                
+                if (!response.ok) {
+                    throw new Error('Lỗi khi lấy dữ liệu');
+                }
+
+                // Chuyển đổi dữ liệu trả về sang định dạng JSON
+                const data = await response.json();
+                
+                // Gán dữ liệu lấy được vào mảng stories
+                stories = data;
+
+                // Gọi hàm hiển thị giao diện với dữ liệu mới
+                renderStories(stories);
+                
+                // Cập nhật lại bộ lọc nếu người dùng đang dùng bộ lọc
+                applyFilters();
+
+            } catch (error) {
+                console.error("Không thể kết nối đến Backend:", error);
+                // Hiển thị thông báo lỗi lên màn hình (nếu muốn)
+                const storyGrid = document.getElementById('story-grid');
+                storyGrid.innerHTML = `<p class="text-center w-full text-red-500 col-span-full">Lỗi kết nối máy chủ. Vui lòng thử lại sau!</p>`;
+            }
+        }
+     
+      // --- 2. Trạng thái ---
+      let currentTheme = 'light';
+      let effectInterval;
+      let currentFilterCategory = 'all'; 
+      let lastViewBeforeReading = 'home'; // Lưu vết để khi bấm quay lại
+      
+      let currentReadingStoryId = null;
+      let currentChapterIndex = 0;
+      
+      // --- STREAMING_CHUNK:Khai báo DOM và Hàm Render Danh sách... ---
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      const htmlElement = document.documentElement;
+      const body = document.body;
+      const effectsContainer = document.getElementById('effects-container');
+      
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const filterToggleBtn = document.getElementById('filter-toggle-btn');
+      const filterPanel = document.getElementById('filter-panel');
+      const storyGrid = document.getElementById('story-grid');
+      const noResults = document.getElementById('no-results');
+      const searchInput = document.getElementById('search-input');
+      
+      const heroBanner = document.getElementById('hero-banner');
+      const sectionHeader = document.getElementById('section-header');
+      const sectionTitle = document.getElementById('section-title');
+      const sectionDesc = document.getElementById('section-desc');
+
+      function formatFormatIcon(format) { return format === 'truyen-chu' ? '<i class="ph-fill ph-book-open"></i>' : '<i class="ph-fill ph-image"></i>'; }
+      function formatStatusBadge(status) {
+          return status === 'hoan-thanh' 
+            ? '<span class="absolute top-2 right-2 bg-green-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">Hoàn thành</span>' 
+            : '<span class="absolute top-2 right-2 bg-amber-500/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">Đang ra</span>';
+      }
+
+      function renderStories(data) {
+          storyGrid.innerHTML = '';
+          if (data.length === 0) {
+              storyGrid.classList.add('hidden'); noResults.classList.remove('hidden'); return;
+          }
+          storyGrid.classList.remove('hidden'); noResults.classList.add('hidden');
+
+          data.forEach(story => {
+              const card = document.createElement('div');
+              card.className = 'story-card bg-white dark:bg-night-surface rounded-2xl p-3 border border-sakura-mid/30 dark:border-night-border flex flex-col group';
+              
+              // Cập nhật onclick để gọi hàm mở truyện thay vì alert
+              card.onclick = () => openStory(story._id);
+
+              card.innerHTML = `
+                  <div class="relative overflow-hidden rounded-xl mb-3 aspect-[3/4] shadow-sm">
+                      <img src="${story.image}" onerror="this.src='https://placehold.co/400x600/f4c7cc/5c4044?text=Bia+Truyen'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="${story.title}">
+                      ${formatStatusBadge(story.status)}
+                      <div class="absolute top-2 left-2 bg-sakura-dark dark:bg-night-accent text-white dark:text-slate-900 text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                          ${formatFormatIcon(story.format)} ${story.format === 'truyen-chu' ? 'Chữ' : 'Tranh'}
+                      </div>
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                         <p class="text-white text-xs line-clamp-3">${story.desc}</p>
+                      </div>
+                  </div>
+                  <div class="flex flex-col flex-grow px-1">
+                      <h3 class="font-bold text-base text-text-main dark:text-night-text line-clamp-1 group-hover:text-sakura-dark dark:group-hover:text-night-accent transition-colors mb-1">${story.title}</h3>
+                      <p class="text-xs text-sakura-dark dark:text-night-accent mb-2">Tác giả: ${story.author}</p>
+                      <div class="flex flex-wrap gap-1 mb-3">
+                          ${story.tags.map(tag => `<span class="text-[9px] uppercase font-semibold bg-sakura-light dark:bg-slate-800 text-text-muted dark:text-night-text-muted px-2 py-0.5 rounded-full border border-sakura-mid/20 dark:border-slate-700">#${tag.replace('-',' ')}</span>`).join('')}
+                      </div>
+                      <div class="mt-auto flex items-center justify-between text-text-muted dark:text-night-text-muted text-xs font-medium border-t border-sakura-light dark:border-slate-800 pt-2">
+                          <div class="flex items-center gap-3">
+                              <button onclick="toggleLike(event, '${story._id}')" class="flex items-center gap-1 hover:text-rose-500 transition-colors group/like relative z-10" title="${story.liked ? 'Bỏ thích' : 'Yêu thích'}">
+                                  <i class="${story.liked ? 'ph-fill text-rose-500' : 'ph group-hover/like:text-rose-400'} ph-heart text-sm transition-transform duration-300"></i>
+                                  <span class="like-count ${story.liked ? 'text-rose-500' : ''}">${story.likes}</span>
+                              </button>
+                              <span class="flex items-center gap-1 hidden sm:flex"><i class="ph-fill ph-star text-yellow-400"></i> 5.0</span>
+</div>
+<span class="flex items-center gap-1 text-sakura-dark dark:text-night-accent"><i class="ph-fill ph-list-dashes"></i> ${story.chaptersData ? story.chaptersData.length : 0}c</span>
+                      </div>
+                  </div>
+              `;
+              storyGrid.appendChild(card);
+          });
+      }
+
+      window.toggleLike = function(event, id) {
+          event.stopPropagation(); 
+          const btn = event.currentTarget;
+          const icon = btn.querySelector('i');
+          const countSpan = btn.querySelector('.like-count');
+          const storyIndex = stories.findIndex(s => s._id === id);
+          if (storyIndex > -1) {
+              const story = stories[storyIndex];
+              story.liked = !story.liked;
+              story.likes += story.liked ? 1 : -1;
+              countSpan.textContent = story.likes;
+              btn.title = story.liked ? 'Bỏ thích' : 'Yêu thích';
+              if (story.liked) {
+                  icon.classList.remove('ph', 'group-hover/like:text-rose-400'); icon.classList.add('ph-fill', 'text-rose-500'); countSpan.classList.add('text-rose-500');
+                  icon.classList.add('scale-150'); setTimeout(() => icon.classList.remove('scale-150'), 200);
+              } else {
+                  icon.classList.remove('ph-fill', 'text-rose-500'); icon.classList.add('ph', 'group-hover/like:text-rose-400'); countSpan.classList.remove('text-rose-500');
+              }
+          }
+      };
+
+      // --- STREAMING_CHUNK:Xử lý Logic Đọc Truyện... ---
+      function openStory(id) {
+          const story = stories.find(s => s._id === id);
+          if (!story) return;
+
+          // Kiểm tra xem truyện có dữ liệu chương không
+          if (!story.chaptersData || story.chaptersData.length === 0) {
+             const msg = document.createElement('div');
+             msg.className = "fixed bottom-6 right-6 bg-amber-500 text-white px-6 py-3 rounded-2xl shadow-lg z-50 font-bold animate-bounce";
+             msg.innerHTML = `<i class="ph-bold ph-warning-circle mr-2"></i> Truyện này chưa có nội dung!`;
+             document.body.appendChild(msg);
+             setTimeout(() => msg.remove(), 3000);
+             return;
+          }
+
+          currentReadingStoryId = id;
+          currentChapterIndex = 0; // Mặc định mở chương đầu
+          
+          // Điền thông tin tiêu đề
+          document.getElementById('read-story-title').innerText = story.title;
+          document.getElementById('read-story-author').innerHTML = `<i class="ph-fill ph-pen-nib mr-1"></i> ${story.author}`;
+          
+          renderCurrentChapter();
+          navigate('read-story');
+          
+          // Cuộn lên đầu trang
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function renderCurrentChapter() {
+          const story = stories.find(s => s._id === currentReadingStoryId);
+          const chapter = story.chaptersData[currentChapterIndex];
+          
+          document.getElementById('read-chapter-title').innerText = chapter.title;
+          
+          const contentDiv = document.getElementById('read-content');
+          
+          // Xử lý hiển thị dựa trên định dạng
+          if (story.format === 'truyen-chu') {
+              contentDiv.innerHTML = chapter.content;
+          } else if (story.format === 'truyen-tranh') {
+              // Ghép các ảnh thành một cuộn dài
+              const imagesHTML = chapter.images.map(src => `<img src="${src}" alt="Trang truyện" loading="lazy" />`).join('');
+              contentDiv.innerHTML = imagesHTML;
+          }
+
+          // Cập nhật trạng thái nút điều hướng
+          const btnPrev = document.getElementById('btn-prev-chap');
+          const btnNext = document.getElementById('btn-next-chap');
+          const indicator = document.getElementById('chap-indicator');
+          
+          indicator.innerText = `${currentChapterIndex + 1} / ${story.chaptersData.length}`;
+          
+          btnPrev.disabled = (currentChapterIndex === 0);
+          btnNext.disabled = (currentChapterIndex === story.chaptersData.length - 1);
+      }
+
+      window.changeChapter = function(step) {
+          const story = stories.find(s => s._id === currentReadingStoryId);
+          const newIndex = currentChapterIndex + step;
+          
+          if (newIndex >= 0 && newIndex < story.chaptersData.length) {
+              currentChapterIndex = newIndex;
+              renderCurrentChapter();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+      }
+
+      // --- STREAMING_CHUNK:Cập nhật Logic Điều hướng (Router)... ---
+      function navigate(view) {
+          // Lưu vết nếu rời khỏi màn hình chính để sau này Back lại
+          if (['home', 'truyen-chu', 'truyen-tranh'].includes(view)) {
+              lastViewBeforeReading = view;
+          }
+          
+          // Xử lý nút Back
+          if (view === 'back') {
+              view = lastViewBeforeReading; 
+          }
+
+          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+          mobileMenu.classList.add('hidden');
+
+          if (view === 'tac-gia') {
+              document.getElementById('view-author').classList.add('active');
+          } else if (view === 'read-story') {
+              document.getElementById('view-read-story').classList.add('active');
+          } else {
+              document.getElementById('view-stories').classList.add('active');
+              
+              if (view === 'home') {
+                  heroBanner.classList.remove('hidden');
+                  sectionHeader.classList.add('hidden');
+                  currentFilterCategory = 'all';
+              } else if (view === 'truyen-chu') {
+                  heroBanner.classList.add('hidden');
+                  sectionHeader.classList.remove('hidden');
+                  sectionTitle.innerText = "Truyện Chữ";
+                  sectionDesc.innerText = "Những dòng văn êm ái xoa dịu tâm hồn.";
+                  currentFilterCategory = 'truyen-chu';
+              } else if (view === 'truyen-tranh') {
+                  heroBanner.classList.add('hidden');
+                  sectionHeader.classList.remove('hidden');
+                  sectionTitle.innerText = "Truyện Tranh";
+                  sectionDesc.innerText = "Thế giới rực rỡ qua từng nét vẽ.";
+                  currentFilterCategory = 'truyen-tranh';
+              }
+              
+              searchInput.value = '';
+              document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+              applyFilters();
+          }
+      }
+
+      // --- STREAMING_CHUNK:Bộ lọc và Hiệu ứng... ---
+      function applyFilters() {
+          const query = searchInput.value.toLowerCase();
+          const selectedFormats = Array.from(document.querySelectorAll('.filter-format:checked')).map(cb => cb.value);
+          const selectedStatuses = Array.from(document.querySelectorAll('.filter-status:checked')).map(cb => cb.value);
+          const selectedTags = Array.from(document.querySelectorAll('.filter-tag:checked')).map(cb => cb.value);
+
+          const filtered = stories.filter(story => {
+              const matchSearch = story.title.toLowerCase().includes(query) || story.author.toLowerCase().includes(query);
+              const matchCategory = currentFilterCategory === 'all' || story.format === currentFilterCategory;
+              const matchFormat = selectedFormats.length === 0 || selectedFormats.includes(story.format);
+              const matchStatus = selectedStatuses.length === 0 || selectedStatuses.includes(story.status);
+              const matchTag = selectedTags.length === 0 || selectedTags.some(t => story.tags.includes(t));
+              return matchSearch && matchCategory && matchFormat && matchStatus && matchTag;
+          });
+          renderStories(filtered);
+      }
+
+      searchInput.addEventListener('input', applyFilters);
+      filterToggleBtn.addEventListener('click', () => filterPanel.classList.toggle('hidden'));
+      mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+      function clearEffects() {
+          effectsContainer.innerHTML = '';
+          if(effectInterval) clearInterval(effectInterval);
+      }
+
+      function createPetal() {
+          const petal = document.createElement("div"); petal.classList.add("petal");
+          const startX = Math.random() * window.innerWidth;
+          const size = Math.random() * 8 + 6; const duration = Math.random() * 5 + 7; 
+          const delay = Math.random() * 5; const drift = (Math.random() - 0.5) * 200; const spin = Math.random() * 360 + 180; 
+          petal.style.left = `${startX}px`; petal.style.width = `${size}px`; petal.style.height = `${size * 1.2}px`;
+          petal.style.animationDuration = `${duration}s`; petal.style.animationDelay = `${delay}s`;
+          petal.style.setProperty("--drift", `${drift}px`); petal.style.setProperty("--spin", `${spin}deg`);
+          effectsContainer.appendChild(petal);
+          setTimeout(() => { if(petal.parentElement) petal.remove(); }, (duration + delay) * 1000);
+      }
+
+      function createRainDrop() {
+          const drop = document.createElement('div'); drop.classList.add('drop');
+          const left = Math.random() * 120 - 10; const duration = Math.random() * 0.5 + 0.4; const height = Math.random() * 20 + 15; 
+          drop.style.left = `${left}vw`; drop.style.height = `${height}px`; drop.style.animationDuration = `${duration}s`;
+          effectsContainer.appendChild(drop);
+          setTimeout(() => { if(drop.parentElement) drop.remove(); }, duration * 1000);
+      }
+
+      function startEffects() {
+          clearEffects();
+          if (currentTheme === 'light') {
+              for(let i=0; i<25; i++) createPetal();
+              effectInterval = setInterval(() => { if (document.querySelectorAll(".petal").length < 40) createPetal(); }, 800);
+          } else {
+              for(let i=0; i<40; i++) createRainDrop();
+              effectInterval = setInterval(() => { if (document.querySelectorAll(".drop").length < 80) { createRainDrop(); createRainDrop(); } }, 50);
+          }
+      }
+
+      function toggleTheme() {
+          if (htmlElement.classList.contains('light')) {
+              htmlElement.classList.remove('light'); htmlElement.classList.add('dark'); body.classList.add('dark');
+              themeIcon.classList.remove('ph-moon'); themeIcon.classList.add('ph-sun'); currentTheme = 'dark';
+          } else {
+              htmlElement.classList.remove('dark'); htmlElement.classList.add('light'); body.classList.remove('dark');
+              themeIcon.classList.remove('ph-sun'); themeIcon.classList.add('ph-moon'); currentTheme = 'light';
+          }
+          startEffects();
+      }
+
+      themeToggle.addEventListener('click', toggleTheme);
+
+            window.addEventListener('DOMContentLoaded', () => {
+            fetchStoriesFromBackend(); // Gọi API lấy dữ liệu thay vì render trực tiếp
+            startEffects();
+        });
+    </script>
+  </body>
+</html>
+
+
