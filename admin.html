@@ -402,7 +402,27 @@
         const uploadStatus = document.getElementById('upload-status');
         const chapterImages = document.getElementById('chapter-images');
 
-        btnUpload.addEventListener('click', () => fileInput.click());
+        const btnUploadCover = document.getElementById('btn-upload-cover');
+const coverFileInput = document.getElementById('cover-file-input');
+const coverUploadStatus = document.getElementById('cover-upload-status');
+
+// 2. Khi bấm vào nút "Chọn ảnh từ máy" -> Ép hệ thống tự động bấm vào thẻ input ẩn
+btnUploadCover.addEventListener('click', function() {
+    coverFileInput.click(); 
+});
+
+// 3. (Tùy chọn thêm) Khi đã chọn xong ảnh, hiển thị tên ảnh ra màn hình cho trực quan
+coverFileInput.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+        // Lấy tên của file vừa chọn
+        const fileName = e.target.files[0].name;
+        // In tên file đó vào thẻ span bên cạnh
+        coverUploadStatus.textContent = "Đã chọn: " + fileName;
+        coverUploadStatus.classList.add('text-green-600'); // Đổi sang màu xanh cho đẹp
+    } else {
+        coverUploadStatus.textContent = "";
+    }
+});
 
         fileInput.addEventListener('change', async () => {
             if (fileInput.files.length === 0) return;
