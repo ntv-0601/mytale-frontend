@@ -183,9 +183,9 @@
             const isMe = msg.uuid === myUUID; 
             const adminToken = localStorage.getItem('mytales_token');
             const wrapper = document.createElement('div');
-            wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
-            wrapper.id = `message-bubble-${msg.id}`; // DÒNG MỚI THÊM: Gắn định vị
-            // Xử lý @Tag (Tô màu tím neon nếu đúng tên mình)
+            wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full mb-2`; // Thêm mb-2 để chừa chỗ cho tim
+            wrapper.id = `message-bubble-${msg.id}`;
+            
             let displayContent = msg.content;
             let isTagged = false;
             const tagPattern = '@' + myUUID;
@@ -194,13 +194,9 @@
                 displayContent = displayContent.replace(new RegExp(tagPattern, 'g'), `<span class="bg-purple-500 text-white px-1.5 py-0.5 rounded-md font-bold animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">${tagPattern}</span>`);
             }
 
-            // Gọi chuông thông báo nếu mình bị tag
             if (isTagged && !isMe) {
-                // Chuyển đổi thời gian để so sánh (Tin nhắn mới trong vòng 10 giây mới reo chuông)
                 const messageTime = new Date(msg.createdAt).getTime();
-                if (messageTime > Date.now() - 10000) {
-                    showToastNotification();
-                }
+                if (messageTime > Date.now() - 10000) showToastNotification();
             }
 
             let replyHTML = '';
@@ -208,35 +204,56 @@
                 replyHTML = `<div class="text-xs mb-1 bg-white/50 px-3 py-1.5 rounded-lg border-l-2 border-sakura-dark text-text-muted opacity-80 italic line-clamp-1 max-w-[80%]"><i class="ph-bold ph-arrow-u-down-left mr-1"></i> ${msg.replyToText}</div>`;
             }
 
+            // --- THUẬT TOÁN ĐẾM VÀ HIỂN THỊ CẢM XÚC ---
+            let reactionsDisplayHTML = '';
+            if (msg.reactions) {
+                const emojiMap = { like: '👍', heart: '❤️', haha: '😂', wow: '😲', cry: '😭', sad: '😢', angry: '😡' };
+                let total = 0; let emojis = [];
+                Object.keys(emojiMap).forEach(key => {
+                    if (msg.reactions[key] && msg.reactions[key].length > 0) {
+                        total += msg.reactions[key].length;
+                        emojis.push(emojiMap[key]);
+                    }
+                });
+                if (total > 0) {
+                    reactionsDisplayHTML = `
+                        <div class="absolute -bottom-3 ${isMe ? 'right-4' : 'left-4'} bg-white border border-sakura-mid rounded-full px-1.5 py-0.5 text-[10px] shadow-sm flex items-center gap-1 z-10">
+                            <span>${emojis.slice(0, 3).join('')}</span>
+                            <span class="text-text-muted font-bold">${total}</span>
+                        </div>
+                    `;
+                }
+            }
+
             const bubbleClasses = isMe 
-                ? 'bg-sakura-dark text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm' 
-                : 'bg-white border border-sakura-mid/30 text-text-main rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm';
+                ? 'bg-sakura-dark text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm relative' 
+                : 'bg-white border border-sakura-mid/30 text-text-main rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm relative';
 
-            // --- GIAO DIỆN CÔNG CỤ (TOOL BUTTONS) ---
-            let toolButtons = `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1" title="Trả lời"><i class="ph-bold ph-arrow-u-down-left"></i></button>`;
+            // --- GIAO DIỆN CÔNG CỤ (FIX LỖI MOBILE BẰNG CÁCH THÊM sm:opacity-0) ---
+            const btnClass = "opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity text-text-muted text-lg p-1 hover:text-sakura-dark";
             
-            // Nút Ghim (Chỉ Admin)
-            if (adminToken) {
-                toolButtons += `<button onclick="pinMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-purple-600 text-lg p-1" title="Ghim"><i class="ph-bold ph-push-pin"></i></button>`;
-            }
+            let toolButtons = `<div class="relative">
+                <button onclick="toggleReactPicker('${msg.id}')" class="${btnClass} hover:text-yellow-500" title="Cảm xúc"><i class="ph-bold ph-smiley"></i></button>
+                <div id="react-picker-${msg.id}" class="hidden absolute z-50 -top-12 ${isMe ? 'right-0' : 'left-0'} bg-white shadow-lg border border-gray-200 rounded-full px-2 py-1 flex gap-2 text-xl">
+                    ${['like:👍', 'heart:❤️', 'haha:😂', 'wow:😲', 'cry:😭', 'sad:😢', 'angry:😡'].map(e => `<button onclick="submitReaction('${msg.id}', '${e.split(':')[0]}')" class="hover:scale-125 hover:-translate-y-1 transition-all">${e.split(':')[1]}</button>`).join('')}
+                </div>
+            </div>`;
+            
+            toolButtons += `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="${btnClass}" title="Trả lời"><i class="ph-bold ph-arrow-u-down-left"></i></button>`;
+            
+            if (adminToken) toolButtons += `<button onclick="pinMessage('${msg.id}')" class="${btnClass} hover:text-purple-600" title="Ghim"><i class="ph-bold ph-push-pin"></i></button>`;
+            if (isMe || adminToken) toolButtons += `<button onclick="deleteMessage('${msg.id}')" class="${btnClass} hover:text-rose-500" title="Xóa"><i class="ph-bold ph-trash"></i></button>`;
+            if (!isMe) toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="${btnClass} hover:text-rose-500" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
 
-            // Nút Xóa (Chủ nhân tin nhắn hoặc Admin)
-            if (isMe || adminToken) {
-                toolButtons += `<button onclick="deleteMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Xóa tin nhắn"><i class="ph-bold ph-trash"></i></button>`;
-            }
-
-            // Nút Tố cáo (Chỉ hiện ở tin nhắn của người khác)
-            if (!isMe) {
-                toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
-            }
-
-            // --- VẼ RA MÀN HÌNH ---
             wrapper.innerHTML = `
                 <span class="text-[10px] text-text-muted mb-1 px-1">${isMe ? 'Bạn' : msg.uuid}</span>
                 ${replyHTML}
                 <div class="flex gap-2 items-end group">
                     ${isMe ? toolButtons : ''}
-                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">${displayContent}</div>
+                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">
+                        ${displayContent}
+                        ${reactionsDisplayHTML}
+                    </div>
                     ${!isMe ? toolButtons : ''}
                 </div>
             `;
@@ -299,7 +316,8 @@
                             uuid: msg.uuid,
                             content: msg.content,
                             replyToText: msg.replyToText,
-                            createdAt: msg.createdAt // DÒNG MỚI THÊM: Lấy thời gian từ Database
+                            createdAt: msg.createdAt,
+                            reactions: msg.reactions
                         }));
                         lastMessageCount = messages.length; 
                     }
@@ -531,6 +549,29 @@
             } catch (error) {
                 console.error("Lỗi xóa tin:", error);
             }
+        }
+        // Bật/tắt bảng chọn Cảm xúc
+        function toggleReactPicker(msgId) {
+            // Đóng tất cả bảng khác trước khi mở
+            document.querySelectorAll('div[id^="react-picker-"]').forEach(el => el.classList.add('hidden'));
+            const picker = document.getElementById(`react-picker-${msgId}`);
+            if (picker) picker.classList.toggle('hidden');
+        }
+
+        // Gửi cảm xúc lên Backend
+        async function submitReaction(msgId, type) {
+            document.getElementById(`react-picker-${msgId}`).classList.add('hidden'); // Đóng bảng
+            try {
+                const response = await fetch(`${API_URL}/${msgId}/react`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uuid: myUUID, type: type })
+                });
+                if (response.ok) {
+                    lastMessageCount = 0; // Ép tải lại toàn bộ tin nhắn để cập nhật tim
+                    fetchMessages();
+                }
+            } catch (error) { console.error('Lỗi gửi cảm xúc:', error); }
         }
     </script>
 </body>
