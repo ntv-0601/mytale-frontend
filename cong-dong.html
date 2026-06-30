@@ -184,7 +184,9 @@
             const adminToken = localStorage.getItem('mytales_token');
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
-            
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
+            wrapper.id = `message-bubble-${msg.id}`; // DÒNG MỚI THÊM: Gắn định vị
             // Xử lý @Tag (Tô màu tím neon nếu đúng tên mình)
             let displayContent = msg.content;
             let isTagged = false;
@@ -268,7 +270,17 @@
                     const adminToken = localStorage.getItem('mytales_token');
                     
                     if (pinnedMsg) {
-                        document.getElementById('pinned-message-container').classList.remove('hidden');
+                        const pinContainer = document.getElementById('pinned-message-container');
+                        pinContainer.classList.remove('hidden');
+                        
+                        // Thêm hiệu ứng trỏ chuột và sự kiện click để cuộn
+                        pinContainer.classList.add('cursor-pointer');
+                        pinContainer.onclick = (e) => {
+                            // Nếu bấm trúng nút X (Gỡ ghim) thì bỏ qua, không cuộn
+                            if (e.target.closest('#btn-unpin')) return;
+                            scrollToMessage(pinnedMsg._id);
+                        };
+
                         document.getElementById('pinned-text').innerText = pinnedMsg.content;
                         if (adminToken) {
                             document.getElementById('btn-unpin').classList.remove('hidden');
@@ -471,7 +483,26 @@
                 toast.classList.add('translate-x-full');
             }, 3000);
         }
-
+        // Hàm cuộn đến tin nhắn cụ thể
+        function scrollToMessage(msgId) {
+            const targetMsg = document.getElementById(`message-bubble-${msgId}`);
+            if (targetMsg) {
+                // Cuộn mượt mà đến giữa màn hình
+                targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Tạo hiệu ứng nháy sáng màu tím để gây chú ý
+                const bubble = targetMsg.querySelector('div[class*="max-w-[85vw]"]');
+                if (bubble) {
+                    const originalBg = bubble.className;
+                    bubble.classList.add('bg-purple-300', 'transition-colors', 'duration-500');
+                    setTimeout(() => {
+                        bubble.classList.remove('bg-purple-300');
+                    }, 1500);
+                }
+            } else {
+                alert("Tin nhắn này đã cũ và không còn hiển thị trên màn hình.");
+            }
+        }
         // Hàm Xóa tin nhắn
         async function deleteMessage(msgId) {
             if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này vĩnh viễn?')) return;
