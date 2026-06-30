@@ -517,26 +517,48 @@
           });
       }
 
-      window.toggleLike = function(event, id) {
-          event.stopPropagation(); 
-          const btn = event.currentTarget;
-          const icon = btn.querySelector('i');
-          const countSpan = btn.querySelector('.like-count');
-          const storyIndex = stories.findIndex(s => s._id === id);
-          if (storyIndex > -1) {
-              const story = stories[storyIndex];
-              story.liked = !story.liked;
-              story.likes += story.liked ? 1 : -1;
-              countSpan.textContent = story.likes;
-              btn.title = story.liked ? 'Bỏ thích' : 'Yêu thích';
-              if (story.liked) {
-                  icon.classList.remove('ph', 'group-hover/like:text-rose-400'); icon.classList.add('ph-fill', 'text-rose-500'); countSpan.classList.add('text-rose-500');
-                  icon.classList.add('scale-150'); setTimeout(() => icon.classList.remove('scale-150'), 200);
-              } else {
-                  icon.classList.remove('ph-fill', 'text-rose-500'); icon.classList.add('ph', 'group-hover/like:text-rose-400'); countSpan.classList.remove('text-rose-500');
-              }
-          }
-      };
+      window.toggleLike = async function(event, id) {
+    event.stopPropagation(); 
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('i');
+    const countSpan = btn.querySelector('.like-count');
+    const storyIndex = stories.findIndex(s => s._id === id);
+    
+    if (storyIndex > -1) {
+        const story = stories[storyIndex];
+        
+        // 1. Ảo thuật giao diện (Làm trước để người dùng thấy tim đổi màu ngay lập tức)
+        story.liked = !story.liked;
+        // Đảm bảo likes là số trước khi cộng trừ
+        story.likes = (story.likes || 0) + (story.liked ? 1 : -1); 
+        
+        countSpan.textContent = story.likes;
+        btn.title = story.liked ? 'Bỏ thích' : 'Yêu thích';
+        
+        if (story.liked) {
+            icon.classList.remove('ph', 'group-hover/like:text-rose-400'); 
+            icon.classList.add('ph-fill', 'text-rose-500'); 
+            countSpan.classList.add('text-rose-500');
+            icon.classList.add('scale-150'); 
+            setTimeout(() => icon.classList.remove('scale-150'), 200);
+        } else {
+            icon.classList.remove('ph-fill', 'text-rose-500'); 
+            icon.classList.add('ph', 'group-hover/like:text-rose-400'); 
+            countSpan.classList.remove('text-rose-500');
+        }
+
+        // 2. Chuyển phát nhanh dữ liệu thật lên Backend
+        try {
+            await fetch(`https://my-tale.onrender.com/api/stories/${id}/like`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ likes: story.likes })
+            });
+        } catch (error) {
+            console.error("Lỗi khi lưu tim vào Database:", error);
+        }
+    }
+};
 
       // --- STREAMING_CHUNK:Xử lý Logic Đọc Truyện... ---
       function openStory(id) {
