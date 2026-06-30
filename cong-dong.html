@@ -66,7 +66,18 @@
                 <p id="my-uuid-display" class="font-mono font-bold text-sakura-dark bg-sakura-light px-2 py-1 rounded-lg mt-1 text-xs"></p>
             </div>
         </div>
-
+        <div id="pinned-message-container" class="hidden px-6 py-3 bg-purple-900/10 border-b border-purple-500/30 flex justify-between items-center shadow-[0_0_15px_rgba(168,85,247,0.15)] z-20 flex-shrink-0 transition-all">
+            <div class="flex items-center gap-3">
+                <i class="ph-fill ph-push-pin text-purple-600 text-xl animate-pulse drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"></i>
+                <div>
+                    <p class="text-[10px] text-purple-600 font-bold uppercase tracking-widest">Thông báo từ Quản trị viên</p>
+                    <p id="pinned-text" class="text-text-main text-sm font-semibold line-clamp-2"></p>
+                </div>
+            </div>
+            <button id="btn-unpin" class="hidden text-text-muted hover:text-purple-600 transition-colors ml-4 p-2">
+                <i class="ph-bold ph-x-circle text-lg"></i>
+            </button>
+        </div>
         <div id="chat-box" class="flex-grow p-6 overflow-y-auto flex flex-col gap-4">
             </div>
 
@@ -139,40 +150,38 @@
 
         // Hàm render một tin nhắn ra màn hình (Giao diện bong bóng chat)
         function renderSingleMessage(msg) {
-            const isMe = msg.uuid === myUUID; // Kiểm tra xem đây có phải tin nhắn của mình không
+            const isMe = msg.uuid === myUUID; 
+            const adminToken = localStorage.getItem('mytales_token'); // Kiểm tra quyền Admin
             
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
             
-            // Xử lý khối trích dẫn (Nếu có reply)
             let replyHTML = '';
             if (msg.replyToText) {
-                replyHTML = `
-                    <div class="text-xs mb-1 bg-white/50 px-3 py-1.5 rounded-lg border-l-2 border-sakura-dark text-text-muted opacity-80 italic line-clamp-1 max-w-[80%]">
-                        <i class="ph-bold ph-arrow-u-down-left mr-1"></i> ${msg.replyToText}
-                    </div>
-                `;
+                replyHTML = `<div class="text-xs mb-1 bg-white/50 px-3 py-1.5 rounded-lg border-l-2 border-sakura-dark text-text-muted opacity-80 italic line-clamp-1 max-w-[80%]"><i class="ph-bold ph-arrow-u-down-left mr-1"></i> ${msg.replyToText}</div>`;
             }
 
-            // Thiết kế bong bóng chat (Màu đậm cho mình, màu nhạt cho người khác)
             const bubbleClasses = isMe 
                 ? 'bg-sakura-dark text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm' 
                 : 'bg-white border border-sakura-mid/30 text-text-main rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm';
+
+            // Giao diện công cụ (Trả lời + Ghim)
+            let toolButtons = `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1" title="Trả lời"><i class="ph-bold ph-arrow-u-down-left"></i></button>`;
+            
+            // Nếu là Admin, vẽ thêm cái nút Ghim màu Tím
+            if (adminToken) {
+                toolButtons += `<button onclick="pinMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-purple-600 text-lg p-1" title="Ghim tin này"><i class="ph-bold ph-push-pin"></i></button>`;
+            }
 
             wrapper.innerHTML = `
                 <span class="text-[10px] text-text-muted mb-1 px-1">${isMe ? 'Bạn' : msg.uuid}</span>
                 ${replyHTML}
                 <div class="flex gap-2 items-end group">
-                    ${isMe ? `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1"><i class="ph-bold ph-arrow-u-down-left"></i></button>` : ''}
-                    
-                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">
-                        ${msg.content}
-                    </div>
-
-                    ${!isMe ? `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1"><i class="ph-bold ph-arrow-u-down-left"></i></button>` : ''}
+                    ${isMe ? toolButtons : ''}
+                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">${msg.content}</div>
+                    ${!isMe ? toolButtons : ''}
                 </div>
             `;
-            
             chatBox.appendChild(wrapper);
             scrollToBottom();
         }
@@ -193,29 +202,7 @@
         });
 
         // Hàm tải tin nhắn từ máy chủ (Hỏi thăm liên tục)
-        async function fetchMessages() {
-            if (isBanned) return; 
-            try {
-                const response = await fetch(API_URL);
-                if (response.ok) {
-                    const messages = await response.json();
-                    
-                    // Chỉ vẽ lại màn hình nếu có tin nhắn mới (tránh bị giật màn hình)
-                    if (messages.length > lastMessageCount) {
-                        chatBox.innerHTML = ''; // Xóa tin cũ
-                        messages.forEach(msg => renderSingleMessage({
-                            id: msg._id,
-                            uuid: msg.uuid,
-                            content: msg.content,
-                            replyToText: msg.replyToText
-                        }));
-                        lastMessageCount = messages.length; // Lưu lại số lượng mới
-                    }
-                }
-            } catch (error) {
-                console.error('Lỗi khi tải tin nhắn:', error);
-            }
-        }
+        fetchMessages
 
         // Hàm gửi tin nhắn thật lên Trạm kiểm duyệt
         async function sendMessage() {
@@ -270,7 +257,31 @@
                 }
             }
         }
+        async function pinMessage(msgId) {
+            const adminToken = localStorage.getItem('mytales_token');
+            if (!adminToken) return alert('Bạn không có quyền thực hiện!');
+            
+            if (confirm('Bạn muốn ghim thông báo này lên đầu trang?')) {
+                await fetch(`https://my-tale.onrender.com/api/messages/${msgId}/pin`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
+                lastMessageCount = 0; // Ép tải lại toàn bộ
+                fetchMessages();
+            }
+        }
 
+        async function unpinMessage(msgId) {
+            const adminToken = localStorage.getItem('mytales_token');
+            if (confirm('Gỡ bỏ ghim thông báo này?')) {
+                await fetch(`https://my-tale.onrender.com/api/messages/${msgId}/unpin`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
+                lastMessageCount = 0;
+                fetchMessages();
+            }
+        }
         // Khởi động hệ thống khi mở web
         window.onload = () => {
             fetchMessages(); // Tải lần đầu
