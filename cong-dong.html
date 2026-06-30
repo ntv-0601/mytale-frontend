@@ -63,16 +63,16 @@
       #chat-box::-webkit-scrollbar-thumb { background: #f4c7cc; border-radius: 10px; }
     </style>
 </head>
-<body class="h-screen flex flex-col p-4 md:p-8 overflow-hidden">
+<body class="h-[100dvh] flex flex-col sm:p-4 md:p-8 overflow-hidden bg-sakura-light">
 
-    <header class="max-w-4xl mx-auto w-full mb-4 flex justify-between items-center flex-shrink-0">
+    <header class="max-w-4xl mx-auto w-full p-3 sm:p-0 sm:mb-4 flex justify-between items-center flex-shrink-0 bg-white/80 sm:bg-transparent shadow-sm sm:shadow-none z-20">
         <button onclick="window.location.href='index.html'" class="flex items-center gap-2 text-sakura-dark font-bold bg-white px-4 py-2 rounded-full shadow-sm border border-sakura-mid/30 hover:bg-sakura-light transition-colors">
             <i class="ph-bold ph-house"></i> Về Trang Chủ
         </button>
         <div class="font-handwriting text-3xl font-bold text-sakura-dark">Góc Tâm Sự</div>
     </header>
 
-    <main class="flex-grow max-w-4xl mx-auto w-full relative flex flex-col glass-panel rounded-3xl shadow-sm border border-white overflow-hidden">
+    <main class="flex-grow max-w-4xl mx-auto w-full relative flex flex-col glass-panel sm:rounded-3xl shadow-sm border-0 sm:border border-white overflow-hidden">
         
         <div class="px-6 py-4 bg-white/50 border-b border-sakura-mid/30 flex justify-between items-center z-10 flex-shrink-0">
             <div>
@@ -121,7 +121,7 @@
             </button>
         </div>
 
-        <div class="p-4 bg-white/80 border-t border-sakura-mid/30 flex gap-3 z-10 flex-shrink-0">
+        <div class="p-3 sm:p-4 bg-white/95 sm:bg-white/80 border-t border-sakura-mid/30 flex gap-2 sm:gap-3 z-10 flex-shrink-0">
             <input type="text" id="chat-input" placeholder="Viết một thông điệp yêu thương..." 
                    class="flex-grow px-5 py-3 rounded-2xl border border-sakura-mid focus:outline-none focus:border-sakura-dark focus:ring-2 focus:ring-sakura-light text-text-main bg-white transition-all">
             <button onclick="sendMockMessage()" class="bg-sakura-dark hover:bg-[#d48895] text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-sm flex items-center gap-2">
