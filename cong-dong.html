@@ -191,11 +191,10 @@
             const tagPattern = '@' + myUUID;
             if (displayContent.includes(tagPattern)) {
                 isTagged = true;
-                // Bôi đậm màu nền cho tên được tag
                 displayContent = displayContent.replace(new RegExp(tagPattern, 'g'), `<span class="bg-purple-500 text-white px-1.5 py-0.5 rounded-md font-bold animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">${tagPattern}</span>`);
             }
 
-            // Gọi chuông thông báo nếu mình bị tag (chỉ gọi 1 lần khi tin nhắn vừa tải)
+            // Gọi chuông thông báo nếu mình bị tag
             if (isTagged && !isMe && msg.createdAt > Date.now() - 5000) {
                 showToastNotification();
             }
@@ -209,18 +208,25 @@
                 ? 'bg-sakura-dark text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm' 
                 : 'bg-white border border-sakura-mid/30 text-text-main rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm';
 
-            // Giao diện công cụ: Trả lời + Ghim + Xóa
+            // --- GIAO DIỆN CÔNG CỤ (TOOL BUTTONS) ---
             let toolButtons = `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1" title="Trả lời"><i class="ph-bold ph-arrow-u-down-left"></i></button>`;
             
+            // Nút Ghim (Chỉ Admin)
             if (adminToken) {
                 toolButtons += `<button onclick="pinMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-purple-600 text-lg p-1" title="Ghim"><i class="ph-bold ph-push-pin"></i></button>`;
             }
 
-            // Nút Xóa (Hiển thị nếu là tin của mình HOẶC nếu máy đang là Admin)
+            // Nút Xóa (Chủ nhân tin nhắn hoặc Admin)
             if (isMe || adminToken) {
                 toolButtons += `<button onclick="deleteMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Xóa tin nhắn"><i class="ph-bold ph-trash"></i></button>`;
             }
 
+            // Nút Tố cáo (Chỉ hiện ở tin nhắn của người khác)
+            if (!isMe) {
+                toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
+            }
+
+            // --- VẼ RA MÀN HÌNH ---
             wrapper.innerHTML = `
                 <span class="text-[10px] text-text-muted mb-1 px-1">${isMe ? 'Bạn' : msg.uuid}</span>
                 ${replyHTML}
@@ -231,10 +237,6 @@
                 </div>
             `;
             chatBox.appendChild(wrapper);
-            // Thêm vào khối if (!isMe) trong hàm renderSingleMessage
-            if (!isMe) {
-                toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
-            }
         }
 
         // --- 4. KẾT NỐI API BACKEND ---
