@@ -217,6 +217,7 @@
             document.getElementById('btn-next-chap').disabled = (currentChapterIndex === currentStory.chaptersData.length - 1);
         }
 
+        
         function changeChapter(step) {
             const newIndex = currentChapterIndex + step;
             if (newIndex >= 0 && newIndex < currentStory.chaptersData.length) {
