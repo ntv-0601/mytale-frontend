@@ -43,6 +43,10 @@
       .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); }
       .reading-content p { margin-bottom: 1.5rem; text-indent: 1.5rem; font-size: 1.125rem; line-height: 1.8; }
       .reading-content img { border-radius: 0.5rem; margin-bottom: 1rem; width: 100%; height: auto; }
+      /* Hiệu ứng Đĩa than xoay */
+      @keyframes spin-disk { 100% { transform: rotate(360deg); } }
+      .spinning { animation: spin-disk 4s linear infinite; }
+      .paused { animation-play-state: paused; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 md:p-8">
@@ -226,6 +230,95 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
+        // --- HỆ THỐNG TRÌNH PHÁT NHẠC ---
+        const audio = document.getElementById('bg-audio');
+        const disk = document.getElementById('record-disk');
+        const playBtnIcon = document.getElementById('icon-play-pause');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // 1. Khôi phục trí nhớ khi vừa tải trang
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTime = localStorage.getItem('mytale_music_time') || 0;
+            const isPlaying = localStorage.getItem('mytale_music_playing') === 'true';
+            const savedVolume = localStorage.getItem('mytale_music_volume') || 0.5;
+
+            // Đặt lại thông số cũ
+            audio.volume = savedVolume;
+            volumeSlider.value = savedVolume;
+            audio.currentTime = savedTime;
+
+            if (isPlaying) {
+                // Trình duyệt thường chặn tự động phát nhạc nếu người dùng chưa click vào trang
+                // Hàm catch sẽ xử lý trường hợp bị chặn này êm đẹp
+                audio.play().then(() => {
+                    updateMusicUI(true);
+                }).catch(() => {
+                    updateMusicUI(false);
+                    localStorage.setItem('mytale_music_playing', 'false');
+                });
+            } else {
+                updateMusicUI(false);
+            }
+        });
+
+        // 2. Nút Bật/Tắt nhạc
+        window.toggleMusic = function() {
+            if (audio.paused) {
+                audio.play();
+                updateMusicUI(true);
+                localStorage.setItem('mytale_music_playing', 'true');
+            } else {
+                audio.pause();
+                updateMusicUI(false);
+                localStorage.setItem('mytale_music_playing', 'false');
+            }
+        }
+
+        // 3. Cập nhật giao diện xoay đĩa
+        function updateMusicUI(isPlaying) {
+            if (isPlaying) {
+                disk.classList.add('spinning');
+                disk.classList.remove('paused');
+                playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
+            } else {
+                disk.classList.add('paused');
+                playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
+            }
+        }
+
+        // 4. Cầm thanh gạt chỉnh âm lượng
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+            localStorage.setItem('mytale_music_volume', e.target.value);
+        });
+
+        // 5. Cứ mỗi 1 giây, hệ thống sẽ lưu lại thời gian bài hát một lần
+        setInterval(() => {
+            if (!audio.paused) {
+                localStorage.setItem('mytale_music_time', audio.currentTime);
+            }
+        }, 1000);
     </script>
+    <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
+        
+        <div class="relative w-12 h-12 flex-shrink-0 cursor-pointer" onclick="toggleMusic()">
+            <img id="record-disk" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Vinyl_record.svg/512px-Vinyl_record.svg.png" alt="Vinyl" class="w-full h-full rounded-full object-cover shadow-sm transition-transform">
+            <div class="absolute inset-0 rounded-full border-2 border-sakura-dark/30 flex items-center justify-center">
+                <div class="w-3 h-3 bg-white rounded-full shadow-inner"></div>
+            </div>
+        </div>
+
+        <div class="hidden md:flex group-hover:flex flex-col gap-1 w-full overflow-hidden transition-all">
+            <div class="flex items-center justify-between gap-2">
+                <button onclick="toggleMusic()" class="text-sakura-dark hover:text-rose-500 transition-colors">
+                    <i id="icon-play-pause" class="ph-fill ph-play-circle text-2xl"></i>
+                </button>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" class="w-16 h-1.5 bg-sakura-mid rounded-lg appearance-none cursor-pointer accent-sakura-dark">
+            </div>
+            <p class="text-[10px] text-text-muted font-bold truncate">🎵 Giai điệu Thanh Xuân</p>
+        </div>
+    </div>
+
+    <audio id="bg-audio" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
 </body>
 </html>
