@@ -203,7 +203,43 @@
 
         // Hàm tải tin nhắn từ máy chủ (Hỏi thăm liên tục)
         fetchMessages
+        async function fetchMessages() {
+            if (isBanned) return; 
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const messages = await response.json();
+                    
+                    // Xử lý hiển thị Tin nhắn Ghim
+                    const pinnedMsg = messages.find(m => m.isPinned);
+                    const adminToken = localStorage.getItem('mytales_token');
+                    
+                    if (pinnedMsg) {
+                        document.getElementById('pinned-message-container').classList.remove('hidden');
+                        document.getElementById('pinned-text').innerText = pinnedMsg.content;
+                        if (adminToken) {
+                            document.getElementById('btn-unpin').classList.remove('hidden');
+                            document.getElementById('btn-unpin').setAttribute('onclick', `unpinMessage('${pinnedMsg._id}')`);
+                        }
+                    } else {
+                        document.getElementById('pinned-message-container').classList.add('hidden');
+                    }
 
+                    if (messages.length > lastMessageCount) {
+                        chatBox.innerHTML = ''; 
+                        messages.forEach(msg => renderSingleMessage({
+                            id: msg._id,
+                            uuid: msg.uuid,
+                            content: msg.content,
+                            replyToText: msg.replyToText
+                        }));
+                        lastMessageCount = messages.length; 
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải tin nhắn:', error);
+            }
+        }
         // Hàm gửi tin nhắn thật lên Trạm kiểm duyệt
         async function sendMessage() {
             if (isBanned) {
