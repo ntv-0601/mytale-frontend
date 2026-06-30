@@ -129,8 +129,9 @@
             </button>
         </div>
     </main>
-
+    
     <script>
+        let lastMessagesSnapshot = "";
         // --- 1. THUẬT TOÁN ĐỊNH DANH ẨN DANH ---
         let myUUID = localStorage.getItem('mytale_anon_uuid');
         
@@ -284,22 +285,18 @@
                 if (response.ok) {
                     const messages = await response.json();
                     
-                    // Xử lý hiển thị Tin nhắn Ghim
+                    // 1. Xử lý hiển thị Tin nhắn Ghim
                     const pinnedMsg = messages.find(m => m.isPinned);
                     const adminToken = localStorage.getItem('mytales_token');
                     
                     if (pinnedMsg) {
                         const pinContainer = document.getElementById('pinned-message-container');
                         pinContainer.classList.remove('hidden');
-                        
-                        // Thêm hiệu ứng trỏ chuột và sự kiện click để cuộn
                         pinContainer.classList.add('cursor-pointer');
                         pinContainer.onclick = (e) => {
-                            // Nếu bấm trúng nút X (Gỡ ghim) thì bỏ qua, không cuộn
                             if (e.target.closest('#btn-unpin')) return;
                             scrollToMessage(pinnedMsg._id);
                         };
-
                         document.getElementById('pinned-text').innerText = pinnedMsg.content;
                         if (adminToken) {
                             document.getElementById('btn-unpin').classList.remove('hidden');
@@ -309,7 +306,13 @@
                         document.getElementById('pinned-message-container').classList.add('hidden');
                     }
 
-                    if (messages.length > lastMessageCount) {
+                    // 2. Thuật toán Chụp ảnh toàn cảnh (Snapshot)
+                    const currentSnapshot = JSON.stringify(messages);
+                    
+                    if (currentSnapshot !== lastMessagesSnapshot) {
+                        // Ghi nhớ xem người dùng có đang đọc ở đáy màn hình không
+                        const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 50;
+                        
                         chatBox.innerHTML = ''; 
                         messages.forEach(msg => renderSingleMessage({
                             id: msg._id,
@@ -317,8 +320,16 @@
                             content: msg.content,
                             replyToText: msg.replyToText,
                             createdAt: msg.createdAt,
-                            reactions: msg.reactions
+                            reactions: msg.reactions 
                         }));
+                        
+                        // Chỉ tự động cuộn xuống đáy nếu CÓ TIN MỚI, hoặc họ ĐANG Ở SẴN ĐÁY
+                        if (messages.length > lastMessageCount || isAtBottom) {
+                            scrollToBottom();
+                        }
+
+                        // Cập nhật lại ảnh chụp và số đếm
+                        lastMessagesSnapshot = currentSnapshot;
                         lastMessageCount = messages.length; 
                     }
                 }
