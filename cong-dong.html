@@ -80,7 +80,17 @@
         </div>
         <div id="chat-box" class="flex-grow p-6 overflow-y-auto flex flex-col gap-4">
             </div>
+            <button id="scroll-bottom-btn" onclick="scrollToBottom()" class="hidden absolute bottom-24 right-8 bg-sakura-dark/90 text-white p-3 rounded-full shadow-lg hover:bg-sakura-dark transition-all z-20 backdrop-blur-sm animate-bounce">
+            <i class="ph-bold ph-arrow-down text-xl"></i>
+        </button>
 
+        <div id="toast-notification" class="fixed top-20 right-4 transform translate-x-full transition-transform duration-300 bg-white border border-sakura-dark shadow-sakura rounded-xl p-4 flex items-center gap-3 z-50">
+            <i class="ph-fill ph-bell-ringing text-sakura-dark text-2xl animate-wiggle"></i>
+            <div>
+                <p class="text-sm font-bold text-text-main">Có người vừa nhắc đến bạn!</p>
+                <p class="text-xs text-text-muted">Kiểm tra tin nhắn mới nhất nhé.</p>
+            </div>
+        </div>
         <div id="reply-bar" class="hidden bg-sakura-light/80 px-6 py-2 border-t border-sakura-mid/30 flex justify-between items-center text-sm flex-shrink-0">
             <div class="flex items-center gap-2 text-text-main">
                 <i class="ph-bold ph-arrow-u-down-left text-sakura-dark"></i>
@@ -151,11 +161,25 @@
         // Hàm render một tin nhắn ra màn hình (Giao diện bong bóng chat)
         function renderSingleMessage(msg) {
             const isMe = msg.uuid === myUUID; 
-            const adminToken = localStorage.getItem('mytales_token'); // Kiểm tra quyền Admin
-            
+            const adminToken = localStorage.getItem('mytales_token');
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full`;
             
+            // Xử lý @Tag (Tô màu tím neon nếu đúng tên mình)
+            let displayContent = msg.content;
+            let isTagged = false;
+            const tagPattern = '@' + myUUID;
+            if (displayContent.includes(tagPattern)) {
+                isTagged = true;
+                // Bôi đậm màu nền cho tên được tag
+                displayContent = displayContent.replace(new RegExp(tagPattern, 'g'), `<span class="bg-purple-500 text-white px-1.5 py-0.5 rounded-md font-bold animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">${tagPattern}</span>`);
+            }
+
+            // Gọi chuông thông báo nếu mình bị tag (chỉ gọi 1 lần khi tin nhắn vừa tải)
+            if (isTagged && !isMe && msg.createdAt > Date.now() - 5000) {
+                showToastNotification();
+            }
+
             let replyHTML = '';
             if (msg.replyToText) {
                 replyHTML = `<div class="text-xs mb-1 bg-white/50 px-3 py-1.5 rounded-lg border-l-2 border-sakura-dark text-text-muted opacity-80 italic line-clamp-1 max-w-[80%]"><i class="ph-bold ph-arrow-u-down-left mr-1"></i> ${msg.replyToText}</div>`;
@@ -165,12 +189,16 @@
                 ? 'bg-sakura-dark text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-sm' 
                 : 'bg-white border border-sakura-mid/30 text-text-main rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm';
 
-            // Giao diện công cụ (Trả lời + Ghim)
+            // Giao diện công cụ: Trả lời + Ghim + Xóa
             let toolButtons = `<button onclick="prepareReply('${msg.id}', '${msg.content.substring(0, 15)}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-sakura-dark text-lg p-1" title="Trả lời"><i class="ph-bold ph-arrow-u-down-left"></i></button>`;
             
-            // Nếu là Admin, vẽ thêm cái nút Ghim màu Tím
             if (adminToken) {
-                toolButtons += `<button onclick="pinMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-purple-600 text-lg p-1" title="Ghim tin này"><i class="ph-bold ph-push-pin"></i></button>`;
+                toolButtons += `<button onclick="pinMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-purple-600 text-lg p-1" title="Ghim"><i class="ph-bold ph-push-pin"></i></button>`;
+            }
+
+            // Nút Xóa (Hiển thị nếu là tin của mình HOẶC nếu máy đang là Admin)
+            if (isMe || adminToken) {
+                toolButtons += `<button onclick="deleteMessage('${msg.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Xóa tin nhắn"><i class="ph-bold ph-trash"></i></button>`;
             }
 
             wrapper.innerHTML = `
@@ -178,12 +206,11 @@
                 ${replyHTML}
                 <div class="flex gap-2 items-end group">
                     ${isMe ? toolButtons : ''}
-                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">${msg.content}</div>
+                    <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">${displayContent}</div>
                     ${!isMe ? toolButtons : ''}
                 </div>
             `;
             chatBox.appendChild(wrapper);
-            scrollToBottom();
         }
 
         // --- 4. KẾT NỐI API BACKEND ---
@@ -324,6 +351,53 @@
             // Thiết lập đồng hồ: Cứ 3 giây lại chạy hàm fetchMessages() 1 lần
             setInterval(fetchMessages, 3000); 
         };
+        // Xử lý ẩn/hiện nút Cuộn xuống
+        const scrollBtn = document.getElementById('scroll-bottom-btn');
+        chatBox.addEventListener('scroll', () => {
+            // Nếu người dùng cuộn lên quá 150px so với đáy, hiện nút
+            if (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight > 150) {
+                scrollBtn.classList.remove('hidden');
+            } else {
+                scrollBtn.classList.add('hidden');
+            }
+        });
+
+        // Hàm gọi chuông thông báo
+        function showToastNotification() {
+            const toast = document.getElementById('toast-notification');
+            toast.classList.remove('translate-x-full');
+            // Tự động cất thông báo sau 3 giây
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Hàm Xóa tin nhắn
+        async function deleteMessage(msgId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này vĩnh viễn?')) return;
+
+            const adminToken = localStorage.getItem('mytales_token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+
+            try {
+                const response = await fetch(`${API_URL}/${msgId}`, {
+                    method: 'DELETE',
+                    headers: headers,
+                    body: JSON.stringify({ uuid: myUUID })
+                });
+
+                if (response.ok) {
+                    lastMessageCount = 0; // Ép tải lại toàn bộ
+                    fetchMessages();
+                } else {
+                    const data = await response.json();
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Lỗi xóa tin:", error);
+            }
+        }
     </script>
 </body>
 </html>
