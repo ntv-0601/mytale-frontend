@@ -7,7 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Nút mở Admin Dashboard (Sẽ được JS tự động hiện/ẩn dựa vào thẻ Admin) -->
+        <button id="btn-admin-dashboard" onclick="openAdminPanel()" class="hidden fixed bottom-6 left-6 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition-all z-40 flex items-center gap-2">
+            <i class="ph-bold ph-shield-check text-xl"></i> Quản Trị
+        </button>
 
+        <!-- Khung Admin Dashboard (Modal) -->
+        <div id="admin-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-purple-50">
+                    <h2 class="text-xl font-bold text-purple-800 flex items-center gap-2"><i class="ph-fill ph-warning-octagon"></i> Xử lý Tố Cáo</h2>
+                    <button onclick="closeAdminPanel()" class="text-gray-500 hover:text-rose-500 text-2xl"><i class="ph-bold ph-x"></i></button>
+                </div>
+                <div id="admin-reports-list" class="p-6 overflow-y-auto flex-grow space-y-4">
+                    <!-- JS sẽ đổ danh sách tố cáo vào đây -->
+                </div>
+                <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-2">
+                    <input type="text" id="unban-input" placeholder="Nhập IP hoặc UUID để Gỡ cấm..." class="flex-grow px-4 py-2 border border-gray-300 rounded-lg">
+                    <button onclick="manualUnban()" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600">Ân Xá</button>
+                </div>
+            </div>
+        </div>
     <script>
       tailwind.config = {
         theme: {
@@ -211,6 +231,10 @@
                 </div>
             `;
             chatBox.appendChild(wrapper);
+            // Thêm vào khối if (!isMe) trong hàm renderSingleMessage
+            if (!isMe) {
+                toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-rose-500 text-lg p-1" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
+            }
         }
 
         // --- 4. KẾT NỐI API BACKEND ---
@@ -361,7 +385,81 @@
                 scrollBtn.classList.add('hidden');
             }
         });
+        // Bật nút Admin nếu có thẻ
+        if (localStorage.getItem('mytales_token')) {
+            document.getElementById('btn-admin-dashboard').classList.remove('hidden');
+        }
 
+        // --- HÀM TỐ CÁO (USER) ---
+        async function reportMessage(msgId, reportedUuid, content) {
+            if (!confirm('Bạn muốn tố cáo người dùng này vi phạm tiêu chuẩn cộng đồng?')) return;
+            try {
+                const response = await fetch('https://my-tale.onrender.com/api/reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reporterUuid: myUUID, reportedUuid, messageId: msgId, messageContent: content })
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) { console.error(error); }
+        }
+
+        // --- HÀM QUẢN TRỊ (ADMIN) ---
+        async function openAdminPanel() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            const adminToken = localStorage.getItem('mytales_token');
+            const listContainer = document.getElementById('admin-reports-list');
+            listContainer.innerHTML = '<p class="text-center">Đang tải dữ liệu...</p>';
+
+            try {
+                const response = await fetch('https://my-tale.onrender.com/api/reports', {
+                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                });
+                const reports = await response.json();
+                
+                if (reports.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500">Tuyệt vời! Không có báo cáo vi phạm nào.</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = reports.map(r => `
+                    <div class="bg-white border border-rose-200 p-4 rounded-xl shadow-sm">
+                        <p class="text-xs text-gray-500 mb-1">Kẻ bị kiện: <b>${r.reportedUuid}</b></p>
+                        <p class="text-sm bg-gray-100 p-2 rounded mb-3 border-l-4 border-rose-400">"${r.messageContent}"</p>
+                        <div class="flex gap-2">
+                            <button onclick="resolveReport('${r._id}', 'ban', '${r.reportedUuid}')" class="bg-rose-500 text-white px-3 py-1 rounded text-sm hover:bg-rose-600">Khóa Vĩnh Viễn</button>
+                            <button onclick="resolveReport('${r._id}', 'ignore', '${r.reportedUuid}')" class="bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-400">Bỏ Qua</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) { console.error(error); }
+        }
+
+        function closeAdminPanel() { document.getElementById('admin-modal').classList.add('hidden'); }
+
+        async function resolveReport(reportId, action, reportedUuid) {
+            const adminToken = localStorage.getItem('mytales_token');
+            await fetch(`https://my-tale.onrender.com/api/reports/${reportId}/resolve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                body: JSON.stringify({ action, reportedUuid })
+            });
+            openAdminPanel(); // Tải lại danh sách
+        }
+
+        async function manualUnban() {
+            const target = document.getElementById('unban-input').value.trim();
+            if (!target) return;
+            const adminToken = localStorage.getItem('mytales_token');
+            const res = await fetch('https://my-tale.onrender.com/api/unban', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                body: JSON.stringify({ target })
+            });
+            const data = await res.json();
+            alert(data.message);
+            document.getElementById('unban-input').value = '';
+        }
         // Hàm gọi chuông thông báo
         function showToastNotification() {
             const toast = document.getElementById('toast-notification');
