@@ -776,57 +776,56 @@ async function fetchStoriesFromBackend() {
             fetchStoriesFromBackend(); // Gọi API lấy dữ liệu thay vì render trực tiếp
             startEffects();
         });
-        // --- HỆ THỐNG TRÌNH PHÁT NHẠC ---
-        // --- HỆ THỐNG TRÌNH PHÁT NHẠC (BẢN AN TOÀN) ---
-        const audio = document.getElementById('bg-audio');
+        // --- HỆ THỐNG TRÌNH PHÁT NHẠC (BẢN CHUẨN) ---
         
-        // Chỉ chạy code nếu tìm thấy thẻ audio trên trang
-        if (audio) {
+        // 1. Luôn luôn khai báo hàm toàn cục trước
+        window.toggleMusic = function() {
+            const audio = document.getElementById('bg-audio');
+            if (!audio) return; // Không có nhạc thì đứng im
+            
+            const disk = document.getElementById('record-disk');
+            const playBtnIcon = document.getElementById('icon-play-pause');
+            
+            if (audio.paused) {
+                audio.play();
+                if(disk) { disk.classList.add('spinning'); disk.classList.remove('paused'); }
+                if(playBtnIcon) playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
+                localStorage.setItem('mytale_music_playing', 'true');
+            } else {
+                audio.pause();
+                if(disk) disk.classList.add('paused');
+                if(playBtnIcon) playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
+                localStorage.setItem('mytale_music_playing', 'false');
+            }
+        };
+
+        // 2. Chờ trang web tải xong 100% mới khôi phục trí nhớ
+        window.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('bg-audio');
+            if (!audio) return;
+
             const disk = document.getElementById('record-disk');
             const playBtnIcon = document.getElementById('icon-play-pause');
             const volumeSlider = document.getElementById('volume-slider');
 
-            window.addEventListener('DOMContentLoaded', () => {
-                const savedTime = localStorage.getItem('mytale_music_time') || 0;
-                const isPlaying = localStorage.getItem('mytale_music_playing') === 'true';
-                const savedVolume = localStorage.getItem('mytale_music_volume') || 0.5;
+            const savedTime = localStorage.getItem('mytale_music_time') || 0;
+            const isPlaying = localStorage.getItem('mytale_music_playing') === 'true';
+            const savedVolume = localStorage.getItem('mytale_music_volume') || 0.5;
 
-                audio.volume = savedVolume;
-                if (volumeSlider) volumeSlider.value = savedVolume;
-                audio.currentTime = savedTime;
+            audio.volume = savedVolume;
+            if (volumeSlider) volumeSlider.value = savedVolume;
+            audio.currentTime = savedTime;
 
-                if (isPlaying) {
-                    audio.play().then(() => updateMusicUI(true)).catch(() => {
-                        updateMusicUI(false);
-                        localStorage.setItem('mytale_music_playing', 'false');
-                    });
-                } else {
-                    updateMusicUI(false);
-                }
-            });
-
-            window.toggleMusic = function() {
-                if (audio.paused) {
-                    audio.play();
-                    updateMusicUI(true);
-                    localStorage.setItem('mytale_music_playing', 'true');
-                } else {
-                    audio.pause();
-                    updateMusicUI(false);
+            if (isPlaying) {
+                audio.play().then(() => {
+                    if(disk) { disk.classList.add('spinning'); disk.classList.remove('paused'); }
+                    if(playBtnIcon) playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
+                }).catch(() => {
+                    // Nếu trình duyệt chặn tự động phát
+                    if(disk) disk.classList.add('paused');
+                    if(playBtnIcon) playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
                     localStorage.setItem('mytale_music_playing', 'false');
-                }
-            }
-
-            function updateMusicUI(isPlaying) {
-                if (!disk || !playBtnIcon) return;
-                if (isPlaying) {
-                    disk.classList.add('spinning');
-                    disk.classList.remove('paused');
-                    playBtnIcon.classList.replace('ph-play-circle', 'ph-pause-circle');
-                } else {
-                    disk.classList.add('paused');
-                    playBtnIcon.classList.replace('ph-pause-circle', 'ph-play-circle');
-                }
+                });
             }
 
             if (volumeSlider) {
@@ -841,7 +840,7 @@ async function fetchStoriesFromBackend() {
                     localStorage.setItem('mytale_music_time', audio.currentTime);
                 }
             }, 1000);
-        }
+        });
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
