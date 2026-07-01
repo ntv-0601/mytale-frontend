@@ -5,61 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khu Vực Quản Trị Viên (QTV)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>body { font-family: 'Quicksand', sans-serif; background-color: #f8fafc; }</style>
-</head>
-<body class="flex items-center justify-center min-h-screen p-4">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "sakura-light": "#FDF4F5",
+                        "sakura-mid": "#F4C7CC",
+                        "sakura-dark": "#E598A3",
+                        "text-main": "#5C4044",
+                        "text-muted": "#8A6E72"
+                    },
+                    fontFamily: {
+                        sans: ["Quicksand", "sans-serif"],
+                        handwriting: ["Dancing Script", "cursive"],
+                    },
+                    boxShadow: {
+                        sakura: "0 4px 14px 0 rgba(229, 152, 163, 0.3)",
+                        glass: "0 8px 32px 0 rgba(229, 152, 163, 0.15)"
+                    }
+                }
+            }
+        };
+    </script>
 
-    <div id="auth-section" class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
-        <div class="text-center mb-8">
-            <i class="ph-fill ph-shield-star text-5xl text-blue-500 mb-2"></i>
-            <h1 class="text-2xl font-bold text-gray-800">Cổng Quản Trị Viên</h1>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fdf4f5;
+            background-image: radial-gradient(#f4c7cc 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #5c4044;
+            min-height: 100vh;
+        }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(229, 152, 163, 0.15);
+        }
+        .neon-btn {
+            box-shadow: 0 4px 15px rgba(229, 152, 163, 0.4);
+            transition: all 0.3s ease;
+        }
+        .neon-btn:hover {
+            box-shadow: 0 6px 20px rgba(229, 152, 163, 0.6);
+            transform: translateY(-2px);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #f4c7cc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e598a3; }
+        
+        .branch-decoration { position: fixed; z-index: -1; pointer-events: none; opacity: 0.6; filter: drop-shadow(2px 4px 6px rgba(229, 152, 163, 0.3)); }
+        .branch-top-left { top: -20px; left: -20px; width: 300px; transform: rotate(15deg); }
+        .branch-bottom-right { bottom: -20px; right: -20px; width: 250px; transform: rotate(195deg); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 md:p-8 relative">
+
+    <svg class="branch-decoration branch-top-left text-[#7e6060]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M -20,0 C 20,40 60,30 100,70 C 130,100 150,80 180,120" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="30" r="12" fill="#F4C7CC" opacity="0.8" />
+      <circle cx="35" cy="35" r="8" fill="#E598A3" />
+      <circle cx="80" cy="50" r="10" fill="#F4C7CC" opacity="0.9" />
+      <circle cx="120" cy="90" r="15" fill="#F4C7CC" opacity="0.7" />
+      <circle cx="123" cy="93" r="7" fill="#E598A3" />
+    </svg>
+
+    <svg class="branch-decoration branch-bottom-right text-[#7e6060]" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 200,200 C 160,160 120,170 80,130 C 50,100 30,120 0,80" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="160" cy="170" r="14" fill="#F4C7CC" opacity="0.8" />
+      <circle cx="155" cy="165" r="6" fill="#E598A3" />
+      <circle cx="100" cy="140" r="10" fill="#F4C7CC" opacity="0.9" />
+    </svg>
+
+    <div id="auth-section" class="w-full max-w-md glass-panel p-8 md:p-10 rounded-[2rem] relative overflow-hidden transition-all duration-500">
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-sakura-mid rounded-full blur-[50px] opacity-60 pointer-events-none"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-sakura-light rounded-full blur-[40px] opacity-70 pointer-events-none"></div>
+        
+        <div class="text-center mb-8 relative z-10">
+            <i class="ph-fill ph-shield-star text-6xl text-sakura-dark mb-2 drop-shadow-sm"></i>
+            <h1 class="text-4xl font-bold text-sakura-dark tracking-wide font-handwriting mt-2">CỔNG QTV</h1>
+            <p class="text-text-muted mt-1 font-semibold">Bảo vệ Góc Tâm Sự</p>
         </div>
 
-        <div class="space-y-4">
-            <h3 class="font-bold text-gray-600 border-b pb-2">1. QTV Cũ - Đăng Nhập</h3>
-            <input type="text" id="login-username" placeholder="Tên QTV (VD: QTV1)" class="w-full px-4 py-3 rounded-xl bg-gray-50 border focus:border-blue-500 outline-none">
-            <input type="password" id="login-pass" placeholder="Mật khẩu" class="w-full px-4 py-3 rounded-xl bg-gray-50 border focus:border-blue-500 outline-none">
-            <button onclick="loginQTV()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition">ĐĂNG NHẬP</button>
+        <div class="space-y-6 relative z-10">
+            <div class="bg-white/50 p-5 rounded-2xl border border-sakura-mid/40">
+                <h3 class="font-bold text-sakura-dark mb-3 flex items-center gap-2"><i class="ph-bold ph-key"></i> QTV Cũ - Đăng Nhập</h3>
+                <div class="space-y-3">
+                    <input type="text" id="login-username" placeholder="Tên QTV (VD: QTV1)" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-all shadow-sm">
+                    <input type="password" id="login-pass" placeholder="Mật khẩu" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-all shadow-sm">
+                    <button onclick="loginQTV()" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3 rounded-xl neon-btn transition-all">VÀO CA TRỰC</button>
+                </div>
+            </div>
             
-            <h3 class="font-bold text-gray-600 border-b pb-2 mt-6 pt-4">2. QTV Mới - Tạo Thẻ</h3>
-            <p class="text-xs text-gray-500 mb-2">Chỉ cần nhập mật khẩu, hệ thống sẽ tự cấp tên QTV cho bạn.</p>
-            <input type="password" id="reg-pass" placeholder="Nhập mật khẩu bạn muốn đặt..." class="w-full px-4 py-3 rounded-xl bg-gray-50 border focus:border-green-500 outline-none">
-            <button onclick="registerQTV()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition">TẠO THẺ QTV</button>
+            <div class="bg-white/50 p-5 rounded-2xl border border-sakura-mid/40">
+                <h3 class="font-bold text-sakura-dark mb-2 flex items-center gap-2"><i class="ph-bold ph-user-plus"></i> QTV Mới - Tạo Thẻ</h3>
+                <p class="text-xs text-text-muted mb-3 font-medium">Nhập mật khẩu để hệ thống tự cấp mã QTV.</p>
+                <div class="space-y-3">
+                    <input type="password" id="reg-pass" placeholder="Nhập mật khẩu tự tạo..." class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-all shadow-sm">
+                    <button onclick="registerQTV()" class="w-full bg-white text-sakura-dark border border-sakura-dark hover:bg-sakura-light font-bold py-3 rounded-xl transition-all shadow-sm hover:shadow-md">NHẬN THẺ QTV</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="dashboard-section" class="hidden bg-white p-8 rounded-3xl shadow-xl w-full max-w-2xl border border-gray-100">
-        <div class="flex justify-between items-center mb-8 border-b pb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Bảng Điều Khiển <span id="qtv-name-display" class="text-blue-500"></span></h1>
-                <p class="text-sm text-gray-500">Quyền hạn: Kiểm duyệt Góc tâm sự, Cập nhật thông báo.</p>
+    <div id="dashboard-section" class="hidden w-full max-w-4xl glass-panel p-6 md:p-10 rounded-[2.5rem] relative z-10 my-auto">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-sakura-mid/40 pb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <i class="ph-fill ph-shield-check text-5xl text-sakura-dark drop-shadow-sm"></i>
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-sakura-dark font-handwriting tracking-wide">Bảng Điều Khiển</h1>
+                    <p class="text-text-muted font-semibold mt-1">Xin chào, chiến binh <span id="qtv-name-display" class="text-sakura-dark font-bold text-lg px-2 bg-sakura-light rounded-md"></span></p>
+                </div>
             </div>
-            <button onclick="logoutQTV()" class="text-rose-500 font-bold hover:bg-rose-50 px-4 py-2 rounded-lg">Đăng xuất</button>
+            <button onclick="logoutQTV()" class="text-text-muted hover:text-rose-600 transition-colors flex items-center gap-2 font-bold bg-white/50 px-4 py-2 rounded-xl shadow-sm border border-sakura-mid/30">
+                <i class="ph-bold ph-sign-out text-xl"></i> Thoát
+            </button>
         </div>
 
-        <div class="mb-8">
-            <label class="block font-bold text-gray-700 mb-2">Thay đổi Dòng chữ thông báo chạy (Marquee):</label>
-            <p class="text-xs text-gray-500 mb-2">Nhập mỗi câu một dòng. Dùng icon tùy thích.</p>
-            <textarea id="marquee-input" rows="5" class="w-full px-4 py-3 rounded-xl bg-gray-50 border focus:border-blue-500 outline-none" placeholder="VD: 🌟 Chào mừng các bạn...&#10;🔥 Truyện mới ra mắt..."></textarea>
-            <button onclick="updateMarquee()" class="mt-3 bg-blue-500 text-white font-bold px-6 py-2 rounded-xl hover:bg-blue-600 shadow-sm">Lưu Thông Báo</button>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white/60 p-6 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col h-full">
+                <h3 class="text-xl font-bold text-sakura-dark mb-2 flex items-center gap-2">
+                    <i class="ph-fill ph-megaphone text-sakura-dark"></i> Dòng Chữ Thông Báo
+                </h3>
+                <p class="text-xs text-text-muted mb-4 font-medium italic">Viết mỗi câu một dòng. Dùng icon thoải mái để thông báo thêm sinh động.</p>
+                <textarea id="marquee-input" rows="6" class="flex-grow w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-y" placeholder="VD: 🌟 Chào mừng các bạn...&#10;🔥 Truyện mới ra mắt..."></textarea>
+                <button onclick="updateMarquee()" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-4 transition-all flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-floppy-disk"></i> LƯU THÔNG BÁO
+                </button>
+            </div>
 
-        <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center">
-            <i class="ph-fill ph-chats-teardrop text-4xl text-blue-400 mb-2"></i>
-            <h3 class="font-bold text-lg text-blue-800 mb-2">Đi đến trạm kiểm duyệt</h3>
-            <p class="text-sm text-blue-600 mb-4">Khi bạn vào Góc Tâm Sự, tên của bạn sẽ tự động hiện là QTV và có đầy đủ quyền Ban/Xóa.</p>
-            <button onclick="window.location.href='cong-dong.html'" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 shadow-md">Vào Góc Tâm Sự</button>
+            <div class="bg-sakura-light/60 p-6 rounded-2xl border border-sakura-mid/40 shadow-sm flex flex-col items-center justify-center text-center h-full">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sakura mb-4">
+                    <i class="ph-fill ph-chats-teardrop text-5xl text-sakura-dark animate-pulse"></i>
+                </div>
+                <h3 class="font-bold text-2xl text-text-main mb-2">Trạm Kiểm Duyệt</h3>
+                <p class="text-sm text-text-muted mb-6 px-4">Khi nhấn nút dưới đây, bạn sẽ được dịch chuyển đến Góc Tâm Sự với tư cách là QTV. Bạn sẽ có đầy đủ quyền năng: Xóa tin nhắn, Ghim thông báo và Cấm vĩnh viễn kẻ phá hoại.</p>
+                <button onclick="window.location.href='cong-dong.html'" class="w-full max-w-xs bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn transition-all flex items-center justify-center gap-2 text-lg">
+                    <i class="ph-bold ph-rocket-launch"></i> ĐẾN GÓC TÂM SỰ
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         const API = 'https://my-tale.onrender.com/api';
         
+        // Kiểm tra xem đã đăng nhập chưa
         if (localStorage.getItem('mytales_qtv_token')) {
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
+            document.body.classList.remove('justify-center'); // Đẩy lên trên cho đẹp
+            document.body.classList.add('justify-start');
             document.getElementById('qtv-name-display').innerText = localStorage.getItem('mytales_qtv_name');
             loadMarquee();
         }
@@ -67,50 +172,66 @@
         async function registerQTV() {
             const password = document.getElementById('reg-pass').value;
             if(!password) return alert("Vui lòng nhập mật khẩu!");
-            const res = await fetch(`${API}/qtv/register`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ password })
-            });
-            const data = await res.json();
-            alert(data.message);
-            document.getElementById('reg-pass').value = '';
+            try {
+                const res = await fetch(`${API}/qtv/register`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ password })
+                });
+                const data = await res.json();
+                alert(data.message);
+                document.getElementById('reg-pass').value = '';
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
         }
 
         async function loginQTV() {
-            const username = document.getElementById('login-username').value;
+            const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-pass').value;
-            const res = await fetch(`${API}/qtv/login`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('mytales_qtv_token', data.token);
-                localStorage.setItem('mytales_qtv_name', data.username);
-                location.reload();
-            } else { alert(data.message); }
+            
+            if(!username || !password) return alert("Vui lòng nhập đủ tên và mật khẩu!");
+
+            try {
+                const res = await fetch(`${API}/qtv/login`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('mytales_qtv_token', data.token);
+                    localStorage.setItem('mytales_qtv_name', data.username);
+                    location.reload();
+                } else { 
+                    alert(data.message); 
+                }
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
         }
 
         function logoutQTV() {
             localStorage.removeItem('mytales_qtv_token');
             localStorage.removeItem('mytales_qtv_name');
+            localStorage.removeItem('mytales_token'); // Xóa luôn chìa khóa phụ tá
             location.reload();
         }
 
         async function loadMarquee() {
-            const res = await fetch(`${API}/marquee`);
-            const data = await res.json();
-            document.getElementById('marquee-input').value = data.join('\n');
+            try {
+                const res = await fetch(`${API}/marquee`);
+                const data = await res.json();
+                document.getElementById('marquee-input').value = data.join('\n');
+            } catch (e) {}
         }
 
         async function updateMarquee() {
             const lines = document.getElementById('marquee-input').value.split('\n').filter(l => l.trim() !== '');
             const token = localStorage.getItem('mytales_qtv_token') || localStorage.getItem('mytales_token');
-            const res = await fetch(`${API}/marquee`, {
-                method: 'PUT', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-                body: JSON.stringify({ texts: lines })
-            });
-            if(res.ok) alert("Cập nhật dòng thông báo thành công!");
+            
+            try {
+                const res = await fetch(`${API}/marquee`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+                    body: JSON.stringify({ texts: lines })
+                });
+                if(res.ok) alert("🎉 Cập nhật dòng thông báo thành công!");
+                else alert("❌ Bạn không có quyền thực hiện thao tác này!");
+            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
         }
     </script>
 </body>
