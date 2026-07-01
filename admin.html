@@ -225,7 +225,22 @@
 
                         <textarea id="chapter-images" rows="4" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed text-sm" placeholder="Các link ảnh sẽ tự động xuất hiện ở đây sau khi tải lên..."></textarea>
                     </div>
-                    
+                    <!-- KHOẢNG BÌNH CHỌN CHO CHƯƠNG -->
+                    <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4 mb-4">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-text-main mb-2">
+                            <input type="checkbox" id="chapter-has-poll" class="w-5 h-5 accent-sakura-dark rounded border-sakura-mid" onchange="document.getElementById('poll-fields').classList.toggle('hidden')">
+                            Bật bình chọn cho chương này?
+                        </label>
+                        <div id="poll-fields" class="hidden space-y-3 mt-3 border-t border-sakura-mid/30 pt-3">
+                            <input type="text" id="poll-question" placeholder="Câu hỏi (VD: Bạn thấy tình tiết chương này thế nào?)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark outline-none text-sm font-medium">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <input type="text" id="poll-opt-1" placeholder="Lựa chọn 1 (VD: Rất cuốn hút)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                                <input type="text" id="poll-opt-2" placeholder="Lựa chọn 2 (VD: Bình thường)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                                <input type="text" id="poll-opt-3" placeholder="Lựa chọn 3 (VD: Khá nhàm chán)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                            </div>
+                            <p class="text-[10px] text-text-muted italic">* Bỏ trống các ô lựa chọn nếu không muốn dùng đủ 3 cái.</p>
+                        </div>
+                    </div>
                     <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all">
                         XUẤT BẢN CHƯƠNG TRUYỆN
                     </button>
@@ -235,6 +250,21 @@
         </div>
 
         <div class="bg-rose-50/80 p-6 md:p-8 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden mt-8">
+            <!-- Bảng Thống Kê Bình Chọn -->
+            <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden mt-8">
+                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-chart-pie-slice text-sakura-dark"></i> Thống Kê Bình Chọn
+                </h3>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-text-main mb-2">Chọn truyện để xem thống kê:</label>
+                    <select id="stat-story-id" onchange="loadPollStats()" class="w-full md:w-1/2 px-4 py-3 rounded-xl bg-white border border-sakura-mid text-text-main focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 outline-none truncate font-medium">
+                        <option value="">-- Chọn bộ truyện --</option>
+                    </select>
+                </div>
+                <div id="poll-stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <p class="text-text-muted text-sm italic">Vui lòng chọn truyện để hiển thị kết quả.</p>
+                </div>
+            </div>
             <h3 class="text-2xl font-bold text-rose-600 mb-6 flex items-center gap-2 font-handwriting">
                 <i class="ph-fill ph-trash text-rose-500"></i> Quản Lý & Xóa Dữ Liệu
             </h3>
@@ -375,6 +405,12 @@
 
         async function loadStoriesForDropdown() {
             try {
+                // Bổ sung select mới này:
+                const selectStatStory = document.getElementById('stat-story-id');
+                selectStatStory.innerHTML = defaultOption;
+
+                // Trong vòng lặp globalStories.forEach:
+                selectStatStory.innerHTML += opt;
                 const response = await fetch('https://my-tale.onrender.com/api/stories');
                 globalStories = await response.json();
                 
@@ -397,7 +433,44 @@
                 console.error("Lỗi:", error);
             }
         }
+        function loadPollStats() {
+                const storyId = document.getElementById('stat-story-id').value;
+                const container = document.getElementById('poll-stats-container');
+                if(!storyId) { 
+                    container.innerHTML = '<p class="text-text-muted text-sm italic">Vui lòng chọn truyện để hiển thị kết quả.</p>'; 
+                    return; 
+                }
+                
+                const story = globalStories.find(s => s._id === storyId);
+                if(!story || !story.chaptersData || story.chaptersData.length === 0) {
+                    container.innerHTML = '<p class="text-text-muted text-sm">Truyện này chưa có chương nào.</p>'; return;
+                }
 
+                let html = '';
+                story.chaptersData.forEach(chap => {
+                    if(chap.hasPoll && chap.pollData) {
+                        const totalVotes = chap.pollData.options.reduce((sum, opt) => sum + opt.votes, 0);
+                        html += `<div class="p-5 bg-white border border-sakura-mid/60 rounded-xl shadow-sm">
+                            <h4 class="font-bold text-text-main text-lg mb-1 truncate">${chap.title}</h4>
+                            <p class="text-sm font-semibold text-sakura-dark mb-4">${chap.pollData.question}</p>
+                            <div class="space-y-3">`;
+                        
+                        chap.pollData.options.forEach(opt => {
+                            const percent = totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
+                            html += `
+                                <div class="relative w-full bg-sakura-light rounded-lg h-7 overflow-hidden border border-sakura-mid/30">
+                                    <div class="absolute top-0 left-0 h-full bg-sakura-mid/80 transition-all duration-500" style="width: ${percent}%"></div>
+                                    <div class="absolute inset-0 flex items-center justify-between px-3 text-[11px] font-bold text-text-main z-10">
+                                        <span class="truncate pr-2">${opt.text}</span>
+                                        <span>${percent}% (${opt.votes})</span>
+                                    </div>
+                                </div>`;
+                        });
+                        html += `</div></div>`;
+                    }
+                });
+                container.innerHTML = html || '<p class="text-text-muted text-sm">Các chương của truyện này không bật tính năng bình chọn.</p>';
+}
         // Xử lý nút XUẤT BẢN CHƯƠNG TRUYỆN
         const addChapterForm = document.getElementById('add-chapter-form');
         const chapterMsg = document.getElementById('chapter-msg');
@@ -409,25 +482,25 @@
         const chapterImages = document.getElementById('chapter-images');
 
         const btnUploadCover = document.getElementById('btn-upload-cover');
-const coverFileInput = document.getElementById('cover-file-input');
-const coverUploadStatus = document.getElementById('cover-upload-status');
+        const coverFileInput = document.getElementById('cover-file-input');
+        const coverUploadStatus = document.getElementById('cover-upload-status');
 
-// 2. Khi bấm vào nút "Chọn ảnh từ máy" -> Ép hệ thống tự động bấm vào thẻ input ẩn
-btnUploadCover.addEventListener('click', function() {
-    coverFileInput.click(); 
-});
+        // 2. Khi bấm vào nút "Chọn ảnh từ máy" -> Ép hệ thống tự động bấm vào thẻ input ẩn
+        btnUploadCover.addEventListener('click', function() {
+            coverFileInput.click(); 
+        });
 
-// 3. (Tùy chọn thêm) Khi đã chọn xong ảnh, hiển thị tên ảnh ra màn hình cho trực quan
-coverFileInput.addEventListener('change', async function(e) {
-    if (e.target.files.length > 0) {
-        const file = e.target.files[0];
-        
-        // --- BẢN VÁ 1: LẤY THẺ THÔNG HÀNH (TOKEN) ---
-        const token = localStorage.getItem('mytales_token');
-        if (!token) {
-            alert('Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang!');
-            return;
-        }
+        // 3. (Tùy chọn thêm) Khi đã chọn xong ảnh, hiển thị tên ảnh ra màn hình cho trực quan
+        coverFileInput.addEventListener('change', async function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            
+            // --- BẢN VÁ 1: LẤY THẺ THÔNG HÀNH (TOKEN) ---
+            const token = localStorage.getItem('mytales_token');
+            if (!token) {
+                alert('Phiên đăng nhập đã hết hạn. Vui lòng tải lại trang!');
+                return;
+            }
 
         coverUploadStatus.textContent = "Đang tải ảnh lên máy chủ...";
         coverUploadStatus.className = 'text-blue-600 text-sm font-bold';
@@ -532,7 +605,20 @@ coverFileInput.addEventListener('change', async function(e) {
             // Lấy thêm mảng ảnh từ ô textarea ảnh
             const rawImages = document.getElementById('chapter-images').value;
             const images = rawImages.split('\n').map(img => img.trim()).filter(img => img !== "");
-
+            const hasPoll = document.getElementById('chapter-has-poll').checked;
+            let pollData = null;
+            if (hasPoll) {
+                const opts = [
+                    document.getElementById('poll-opt-1').value.trim(),
+                    document.getElementById('poll-opt-2').value.trim(),
+                    document.getElementById('poll-opt-3').value.trim()
+                ].filter(o => o !== ''); // Lọc bỏ ô trống
+                
+                pollData = {
+                    question: document.getElementById('poll-question').value || "Bạn thấy chương này thế nào?",
+                    options: opts.map(opt => ({ text: opt, votes: 0 }))
+                };
+            }
             try {
                 const response = await fetch(`https://my-tale.onrender.com/api/stories/${storyId}/chapters`, {
                     method: 'POST',
