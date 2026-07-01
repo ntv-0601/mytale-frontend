@@ -353,57 +353,53 @@
         }
         // Hàm gửi tin nhắn thật lên Trạm kiểm duyệt
         async function sendMessage() {
-            if (isBanned) {
-                alert("Thiết bị của bạn đã bị cấm!");
+            if (typeof isBanned !== 'undefined' && isBanned) {
+                alert('Tài khoản của bạn đã bị khóa vĩnh viễn!');
                 return;
             }
-
-            const text = chatInput.value.trim();
-            if (!text) return;
+            const inputEl = document.getElementById('chat-input');
+            const content = inputEl.value.trim();
+            if (!content) return;
 
             const payload = {
                 uuid: myUUID,
-                content: text,
-                replyToId: replyingToId,
-                replyToText: replyingToId ? replyTargetText.innerText.replace(/"/g, '') : null
+                content: content,
+                // Trích xuất thông tin trả lời (nếu đang bấm reply)
+                replyToId: typeof currentReplyId !== 'undefined' ? currentReplyId : null,
+                replyToText: typeof currentReplyText !== 'undefined' ? currentReplyText : null
             };
 
             // Tạm khóa ô nhập khi đang gửi
             chatInput.disabled = true;
 
             try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload) // payload là biến chứa nội dung tin nhắn của bạn
-            });
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            if (response.ok) {
-                // Nếu thành công thì xóa khung nhập và tải lại tin nhắn
-                document.getElementById('chat-input').value = '';
-                document.getElementById('chat-input').style.height = 'auto'; // Reset chiều cao textarea
-                cancelReply(); 
-                fetchMessages();
-            } else {
-                // ĐIỂM NÂNG CẤP: Đọc lời nhắn cảnh cáo từ Backend
-                const errorData = await response.json();
-                
-                // Hiển thị cảnh báo chặn Link hoặc cấm ngôn từ
-                alert("⚠️ THÔNG BÁO TỪ HỆ THỐNG:\n" + errorData.message);
-                
-                // (Tùy chọn) Ẩn cái modal lỗi đen xì cũ của bạn đi nếu có gọi nó
-                // hideErrorModal(); 
-            }
-        } catch (error) {
-            console.error(error);
-            // Chỉ khi nào đứt mạng thật sự thì mới văng vào đây
-            alert("Mạng có vấn đề, không thể kết nối đến máy chủ!");
-        } finally {
-                if (!isBanned) {
-                    chatInput.disabled = false;
-                    chatInput.focus();
+                if (response.ok) {
+                    // Thành công: Xóa chữ, thu gọn khung và tải tin mới
+                    inputEl.value = '';
+                    inputEl.style.height = 'auto';
+                    if (typeof cancelReply === 'function') cancelReply();
+                    fetchMessages();
+                } else {
+                    // Thất bại: Bị Backend từ chối (Văng tục hoặc Rải link)
+                    const errorData = await response.json();
+                    alert("⚠️ THÔNG BÁO TỪ HỆ THỐNG:\n" + errorData.message);
                 }
+            }   catch (error) {
+                console.error("Lỗi khi gửi:", error);
+                alert("Mạng có vấn đề, không thể kết nối đến máy chủ!");
             }
+                finally {
+                        if (!isBanned) {
+                            chatInput.disabled = false;
+                            chatInput.focus();
+                        }
+                    }
         }
         async function pinMessage(msgId) {
             const adminToken = localStorage.getItem('mytales_token');
