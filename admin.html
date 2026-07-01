@@ -626,8 +626,8 @@
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    // Gửi cả title, content và images
-                    body: JSON.stringify({ title, content, images })
+                    // ĐOẠN GÂY LỖI NẰM Ở ĐÂY: Quên gửi hasPoll và pollData
+                    body: JSON.stringify({ title, content, images, hasPoll, pollData })
                 });
 
                 const data = await response.json();
