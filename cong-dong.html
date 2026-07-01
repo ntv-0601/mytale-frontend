@@ -389,12 +389,6 @@
                 console.error("Lỗi khi gửi:", error);
                 alert("Mạng có vấn đề, không thể kết nối đến máy chủ!");
             }
-                finally {
-                        if (!isBanned) {
-                            chatInput.disabled = false;
-                            chatInput.focus();
-                        }
-                    }
         }
         async function pinMessage(msgId) {
             const adminToken = localStorage.getItem('mytales_token');
