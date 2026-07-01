@@ -119,6 +119,23 @@
       @keyframes spin-disk { 100% { transform: rotate(360deg); } }
       .spinning { animation: spin-disk 4s linear infinite; }
       .paused { animation-play-state: paused; }
+      @keyframes spin-disk { 100% { transform: rotate(360deg); } }
+      .spinning { animation: spin-disk 4s linear infinite; }
+      .paused { animation-play-state: paused; }
+
+      /* BẠN DÁN ĐOẠN NÀY VÀO TRƯỚC </style> NHÉ */
+      @keyframes scroll-text {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+      }
+      .marquee-container {
+          display: flex;
+          white-space: nowrap;
+          animation: scroll-text 25s linear infinite;
+      }
+      .marquee-wrapper:hover .marquee-container {
+          animation-play-state: paused;
+      }
     </style>
   </head>
   <body class="font-sans antialiased relative min-h-screen flex flex-col transition-colors duration-500">
@@ -235,7 +252,24 @@
             <h2 id="section-title" class="font-handwriting text-4xl text-sakura-dark dark:text-night-accent mb-2">Thư viện</h2>
             <p id="section-desc" class="text-text-muted dark:text-night-text-muted">Khám phá các tựa truyện yêu thích.</p>
         </div>
-
+        
+        <div class="max-w-6xl mx-auto mb-6 overflow-hidden glass-panel rounded-2xl py-3 px-4 shadow-sm border border-white dark:border-night-border relative flex items-center marquee-wrapper">
+            <div class="flex items-center justify-center bg-white dark:bg-night-surface rounded-full p-2 shadow-sm border border-sakura-mid/20 z-20 mr-4 flex-shrink-0">
+                <i class="ph-fill ph-megaphone text-sakura-dark dark:text-night-accent text-xl animate-pulse"></i>
+            </div>
+            <div class="absolute left-12 z-10 bg-gradient-to-r from-white/90 dark:from-night-surface to-transparent w-16 h-full pointer-events-none"></div>
+            
+            <div class="w-full overflow-hidden flex items-center text-sm md:text-base font-semibold text-text-main dark:text-night-text cursor-default">
+                <div class="marquee-container gap-16 pl-[100%]">
+                    <span><i class="ph-fill ph-sparkle text-yellow-400 mr-1"></i> Chào mừng các bạn học sinh THPT Nguyễn Văn Cừ đến với thư viện thanh xuân My Tale!</span>
+                    <span><i class="ph-fill ph-book-open text-rose-400 mr-1"></i> Nơi lưu giữ những kỷ niệm tuổi học trò rực rỡ và những câu chuyện mộng mơ.</span>
+                    <span><i class="ph-fill ph-paper-plane-tilt text-blue-400 mr-1"></i> Đừng quên ghé qua Góc Tâm Sự để ẩn danh chia sẻ những nỗi niềm chưa kể nhé!</span>
+                    <span><i class="ph-fill ph-shooting-star text-purple-400 mr-1"></i> Chúc bạn có những phút giây đọc truyện và trò truyện thật thư giãn sau giờ học.</span>
+                </div>
+            </div>
+            <div class="absolute right-0 z-10 bg-gradient-to-l from-white/90 dark:from-night-surface to-transparent w-16 h-full pointer-events-none"></div>
+        </div>
+        
         <div class="max-w-6xl mx-auto mb-10">
             <div class="glass-panel p-3 md:p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center border border-white dark:border-night-border">
                 <div class="relative w-full md:w-2/3">
