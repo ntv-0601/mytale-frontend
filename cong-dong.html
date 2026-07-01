@@ -583,6 +583,34 @@
                 alert('Không thể kết nối đến máy chủ để thực hiện lệnh khóa.');
             }
         }
+        // --- HÀM ADMIN ÂN XÁ (GỠ CẤM) ---
+        async function manualUnban() {
+            const target = document.getElementById('unban-input').value.trim();
+            if (!target) return alert('Vui lòng nhập chính xác định danh cần ân xá!');
+
+            const adminToken = localStorage.getItem('mytales_token');
+            try {
+                // Nhớ đổi thành http://localhost:5000 nếu bạn đang test local nhé!
+                const res = await fetch('https://my-tale.onrender.com/api/unban', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                    body: JSON.stringify({ target })
+                });
+
+                const data = await res.json();
+                
+                // Pop-up thông báo rõ ràng kết quả từ Server
+                alert(data.message);
+
+                // Nếu Server báo thành công (res.ok = true) thì mới xóa chữ trong ô nhập
+                if (res.ok) {
+                    document.getElementById('unban-input').value = '';
+                }
+            } catch (error) {
+                console.error('Lỗi khi ân xá:', error);
+                alert('Không thể kết nối đến máy chủ để thực hiện lệnh ân xá. Hãy kiểm tra lại Server Render!');
+            }
+        }
         // Hàm gọi chuông thông báo
         function showToastNotification() {
             const toast = document.getElementById('toast-notification');
