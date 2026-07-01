@@ -406,32 +406,31 @@
         async function loadStoriesForDropdown() {
             try {
                 const defaultOption = '<option value="">-- Chọn bộ truyện --</option>';
-                // Bổ sung select mới này:
-                const selectStatStory = document.getElementById('stat-story-id');
-                selectStatStory.innerHTML = defaultOption;
-
-                // Trong vòng lặp globalStories.forEach:
-                selectStatStory.innerHTML += opt;
-                const response = await fetch('https://my-tale.onrender.com/api/stories');
-                globalStories = await response.json();
                 
+                const selectStatStory = document.getElementById('stat-story-id');
                 const selectAddChap = document.getElementById('chapter-story-id');
                 const selectDelStory = document.getElementById('delete-story-id');
                 const selectStoryForChap = document.getElementById('select-story-for-chapter');
                 
+                // Gán Option mặc định trước
+                if(selectStatStory) selectStatStory.innerHTML = defaultOption;
+                if(selectAddChap) selectAddChap.innerHTML = defaultOption;
+                if(selectDelStory) selectDelStory.innerHTML = defaultOption;
+                if(selectStoryForChap) selectStoryForChap.innerHTML = defaultOption;
+
+                const response = await fetch('https://my-tale.onrender.com/api/stories');
+                globalStories = await response.json();
                 
-                selectAddChap.innerHTML = defaultOption;
-                selectDelStory.innerHTML = defaultOption;
-                selectStoryForChap.innerHTML = defaultOption;
-                
+                // Vòng lặp nhét từng truyện vào các ô chọn
                 globalStories.forEach(story => {
                     const opt = `<option value="${story._id}">${story.title}</option>`;
-                    selectAddChap.innerHTML += opt;
-                    selectDelStory.innerHTML += opt;
-                    selectStoryForChap.innerHTML += opt;
+                    if(selectStatStory) selectStatStory.innerHTML += opt;
+                    if(selectAddChap) selectAddChap.innerHTML += opt;
+                    if(selectDelStory) selectDelStory.innerHTML += opt;
+                    if(selectStoryForChap) selectStoryForChap.innerHTML += opt;
                 });
             } catch (error) {
-                console.error("Lỗi:", error);
+                console.error("Lỗi tải truyện:", error);
             }
         }
         function loadPollStats() {
@@ -791,6 +790,6 @@
         </div>
     </div>
 
-    <audio id="bg-audio" loop src="music/hope1.mp3"></audio>
+    <audio id="bg-audio" loop src="/music/hope1.mp3"></audio>
 </body>
 </html>
