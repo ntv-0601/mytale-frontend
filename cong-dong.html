@@ -366,9 +366,8 @@
             const payload = {
                 uuid: myUUID,
                 content: content,
-                // Trích xuất thông tin trả lời (nếu đang bấm reply)
-                replyToId: typeof currentReplyId !== 'undefined' ? currentReplyId : null,
-                replyToText: typeof currentReplyText !== 'undefined' ? currentReplyText : null
+                replyToId: replyingToId,
+                replyToText: replyingToText
             };
 
             // Tạm khóa ô nhập khi đang gửi
