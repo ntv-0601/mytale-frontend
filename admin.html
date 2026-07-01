@@ -405,6 +405,7 @@
 
         async function loadStoriesForDropdown() {
             try {
+                const defaultOption = '<option value="">-- Chọn bộ truyện --</option>';
                 // Bổ sung select mới này:
                 const selectStatStory = document.getElementById('stat-story-id');
                 selectStatStory.innerHTML = defaultOption;
@@ -418,7 +419,7 @@
                 const selectDelStory = document.getElementById('delete-story-id');
                 const selectStoryForChap = document.getElementById('select-story-for-chapter');
                 
-                const defaultOption = '<option value="">-- Chọn bộ truyện --</option>';
+                
                 selectAddChap.innerHTML = defaultOption;
                 selectDelStory.innerHTML = defaultOption;
                 selectStoryForChap.innerHTML = defaultOption;
