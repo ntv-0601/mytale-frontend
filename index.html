@@ -260,13 +260,11 @@
             <div class="absolute left-12 z-10 bg-gradient-to-r from-white/90 dark:from-night-surface to-transparent w-16 h-full pointer-events-none"></div>
             
             <div class="w-full overflow-hidden flex items-center text-sm md:text-base font-semibold text-text-main dark:text-night-text cursor-default">
-                <div class="marquee-container gap-16 pl-[100%]">
-                    <span><i class="ph-fill ph-sparkle text-yellow-400 mr-1"></i> Chào mừng các bạn đến với thư viện thanh xuân My Tale!</span>
-                    <span><i class="ph-fill ph-book-open text-rose-400 mr-1"></i> Nơi lưu giữ những kỷ niệm tuổi học trò rực rỡ và những câu chuyện mộng mơ.</span>
-                    <span><i class="ph-fill ph-paper-plane-tilt text-blue-400 mr-1"></i> Đừng quên ghé qua Góc Tâm Sự để ẩn danh chia sẻ những nỗi niềm chưa kể nhé!</span>
-                    <span><i class="ph-fill ph-calendar text-emerald-400 mr-1"></i> Tiểu thuyết sẽ được cập nhật vào thứ sáu lúc 20:00 hàng tuần. Truyện tranh sẽ được cập nhật vào thứ 7 lúc 21:00 hàng tuần.</span>
-                    <span><i class="ph-fill ph-shooting-star text-purple-400 mr-1"></i> Chúc bạn có những phút giây đọc truyện và tâm sự thật thư giãn.</span>
+                <div class="w-full overflow-hidden flex items-center text-sm md:text-base font-semibold text-text-main dark:text-night-text cursor-default">
+                <div id="dynamic-marquee" class="marquee-container gap-16 pl-[100%]">
+                    <span>Đang tải thông báo từ máy chủ...</span>
                 </div>
+            </div>
             </div>
             <div class="absolute right-0 z-10 bg-gradient-to-l from-white/90 dark:from-night-surface to-transparent w-16 h-full pointer-events-none"></div>
         </div>
@@ -940,6 +938,22 @@ async function fetchStoriesFromBackend() {
                 }
             }, 1000);
         });
+        async function loadDynamicMarquee() {
+          try {
+              const res = await fetch('https://my-tale.onrender.com/api/marquee');
+              const texts = await res.json();
+              if (texts.length > 0) {
+                  const container = document.getElementById('dynamic-marquee');
+                  container.innerHTML = texts.map(t => `<span>${t}</span>`).join('');
+              }
+          } catch (e) { console.error("Lỗi tải Marquee"); }
+      }
+      // Gọi nó bên trong sự kiện khởi động
+      window.addEventListener('DOMContentLoaded', () => {
+          fetchStoriesFromBackend(); 
+          startEffects();
+          loadDynamicMarquee(); // <-- GỌI Ở ĐÂY
+      });
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         

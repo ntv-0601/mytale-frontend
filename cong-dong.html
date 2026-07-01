@@ -139,17 +139,33 @@
     
     <script>
         let lastMessagesSnapshot = "";
-        // --- 1. THUẬT TOÁN ĐỊNH DANH ẨN DANH ---
-        let myUUID = localStorage.getItem('mytale_anon_uuid');
+        // --- 1. THUẬT TOÁN ĐỊNH DANH & CẤP QUYỀN QTV ---
+        let myUUID = '';
         
-        if (!myUUID) {
-            // Nếu chưa có, tự động tạo một mã ngẫu nhiên (Ví dụ: anon_xyz123)
-            myUUID = 'anon_' + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem('mytale_anon_uuid', myUUID);
+        // Kiểm tra xem có đang đăng nhập thẻ QTV không
+        const qtvName = localStorage.getItem('mytales_qtv_name');
+        const qtvToken = localStorage.getItem('mytales_qtv_token');
+        
+        if (qtvName && qtvToken) {
+            // Nếu là QTV, ép tên hiển thị là tên QTV (VD: QTV1)
+            myUUID = `<span class="text-blue-600 font-black tracking-widest px-1 bg-blue-100 rounded border border-blue-300">🛡️ ${qtvName}</span>`;
+            // Cấp chìa khóa cho phép QTV mở bảng Admin để xóa/ban
+            if (!localStorage.getItem('mytales_token')) {
+                // Mượn tạm token QTV đưa vào kho token Admin để mở khóa các nút giao diện
+                localStorage.setItem('mytales_token', qtvToken); 
+            }
+        } else {
+            // Dân thường thì tự bốc thăm số ẩn danh
+            myUUID = localStorage.getItem('mytale_anon_uuid');
+            if (!myUUID) {
+                myUUID = 'anon_' + Math.random().toString(36).substr(2, 6);
+                localStorage.setItem('mytale_anon_uuid', myUUID);
+            }
         }
         
-        // Hiển thị mã lên góc phải màn hình
-        document.getElementById('my-uuid-display').innerText = myUUID;
+        // Loại bỏ thẻ HTML (nếu có) khi truyền ID lên server
+        const plainUUID = qtvName || myUUID; 
+        document.getElementById('my-uuid-display').innerHTML = myUUID;
 
         // --- 2. BIẾN TRẠNG THÁI ---
         let replyingToId = null; 
@@ -409,7 +425,7 @@
             if (!text) return;
 
             const payload = {
-                uuid: myUUID,
+                uuid: plainUUID,
                 content: text,
                 replyToId: replyingToId,
                 replyToText: replyingToId ? replyTargetText.innerText.replace(/"/g, '') : null
@@ -509,7 +525,7 @@
                 const response = await fetch('https://my-tale.onrender.com/api/reports', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reporterUuid: myUUID, reportedUuid, messageId: msgId, messageContent: content })
+                    body: JSON.stringify({ reporterUuid: plainUUID, reportedUuid, messageId: msgId, messageContent: content })
                 });
                 const data = await response.json();
                 alert(data.message);
@@ -652,7 +668,7 @@
                 const response = await fetch(`${API_URL}/${msgId}`, {
                     method: 'DELETE',
                     headers: headers,
-                    body: JSON.stringify({ uuid: myUUID })
+                    body: JSON.stringify({ uuid: plainUUID })
                 });
 
                 if (response.ok) {
@@ -681,7 +697,7 @@
                 const response = await fetch(`${API_URL}/${msgId}/react`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uuid: myUUID, type: type })
+                    body: JSON.stringify({ uuid: plainUUID, type: type })
                 });
                 if (response.ok) {
                     lastMessageCount = 0; // Ép tải lại toàn bộ tin nhắn để cập nhật tim
