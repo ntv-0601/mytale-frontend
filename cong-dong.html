@@ -22,9 +22,16 @@
                 <div id="admin-reports-list" class="p-6 overflow-y-auto flex-grow space-y-4">
                     <!-- JS sẽ đổ danh sách tố cáo vào đây -->
                 </div>
-                <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-2">
-                    <input type="text" id="unban-input" placeholder="Nhập IP hoặc UUID để Gỡ cấm..." class="flex-grow px-4 py-2 border border-gray-300 rounded-lg">
-                    <button onclick="manualUnban()" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600">Ân Xá</button>
+                <div class="p-6 border-t border-gray-200 bg-gray-50 flex flex-col gap-4">
+                <div class="flex gap-2">
+                    <input type="text" id="manual-ban-input" placeholder="Nhập Định danh (UUID hoặc IP) để KHÓA..." class="flex-grow px-4 py-2 border border-rose-300 rounded-lg focus:outline-none focus:border-rose-500">
+                    <button onclick="manualBan()" class="bg-rose-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-rose-600 whitespace-nowrap">Khóa Cứng</button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <input type="text" id="unban-input" placeholder="Nhập IP hoặc UUID để Gỡ cấm..." class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500">
+                    <button onclick="manualUnban()" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 whitespace-nowrap">Ân Xá</button>
+                </div>
                 </div>
             </div>
         </div>
@@ -552,18 +559,29 @@
             openAdminPanel(); // Tải lại danh sách
         }
 
-        async function manualUnban() {
-            const target = document.getElementById('unban-input').value.trim();
-            if (!target) return;
+        async function manualBan() {
+            const target = document.getElementById('manual-ban-input').value.trim();
+            if (!target) return alert('Vui lòng nhập chính xác định danh cần khóa!');
+            
+            if (!confirm(`Bạn có chắc chắn muốn khóa vĩnh viễn định danh: ${target}?`)) return;
+
             const adminToken = localStorage.getItem('mytales_token');
-            const res = await fetch('https://my-tale.onrender.com/api/unban', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
-                body: JSON.stringify({ target })
-            });
-            const data = await res.json();
-            alert(data.message);
-            document.getElementById('unban-input').value = '';
+            try {
+                const res = await fetch('https://my-tale.onrender.com/api/ban', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                    body: JSON.stringify({ target })
+                });
+                const data = await res.json();
+                alert(data.message);
+                
+                if (res.ok) {
+                    document.getElementById('manual-ban-input').value = ''; // Xóa chữ trong ô nhập sau khi cấm thành công
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Không thể kết nối đến máy chủ để thực hiện lệnh khóa.');
+            }
         }
         // Hàm gọi chuông thông báo
         function showToastNotification() {
