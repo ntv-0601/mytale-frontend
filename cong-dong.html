@@ -178,7 +178,19 @@
         function scrollToBottom() {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
+        // Hàm biến đổi mốc thời gian ISO từ server thành dạng: Giờ:Phút - Ngày/Tháng/Năm
+        function formatMessageTime(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${hours}:${minutes} - ${day}/${month}/${year}`;
+        }
         // Hàm render một tin nhắn ra màn hình (Giao diện bong bóng chat)
         function renderSingleMessage(msg) {
             const isMe = msg.uuid === myUUID; 
@@ -246,6 +258,9 @@
             if (isMe || adminToken) toolButtons += `<button onclick="deleteMessage('${msg.id}')" class="${btnClass} hover:text-rose-500" title="Xóa"><i class="ph-bold ph-trash"></i></button>`;
             if (!isMe) toolButtons += `<button onclick="reportMessage('${msg.id}', '${msg.uuid}', '${msg.content.replace(/'/g, "\\'")}')" class="${btnClass} hover:text-rose-500" title="Tố cáo"><i class="ph-bold ph-flag"></i></button>`;
 
+            // Lấy chuỗi ngày tháng giờ đã được định dạng
+            const timeHTML = `<div class="text-[9px] mt-1 text-right ${isMe ? 'text-white/70' : 'text-text-muted/70'}">${formatMessageTime(msg.createdAt)}</div>`;
+
             wrapper.innerHTML = `
                 <span class="text-[10px] text-text-muted mb-1 px-1">${isMe ? 'Bạn' : msg.uuid}</span>
                 ${replyHTML}
@@ -253,6 +268,7 @@
                     ${isMe ? toolButtons : ''}
                     <div class="${bubbleClasses} max-w-[85vw] md:max-w-md break-words">
                         ${displayContent}
+                        ${timeHTML}
                         ${reactionsDisplayHTML}
                     </div>
                     ${!isMe ? toolButtons : ''}
