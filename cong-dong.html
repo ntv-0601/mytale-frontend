@@ -173,6 +173,7 @@
         // Bấm nút Trả lời tin nhắn
         function prepareReply(messageId, shortText) {
             replyingToId = messageId;
+            replyingToText = shortText; // Lưu lại text
             replyTargetText.innerText = `"${shortText}..."`;
             replyBar.classList.remove('hidden');
             chatInput.focus();
@@ -181,6 +182,7 @@
         // Hủy bỏ trạng thái Trả lời
         function cancelReply() {
             replyingToId = null;
+            replyingToText = null; // Xóa text
             replyBar.classList.add('hidden');
         }
 
@@ -291,7 +293,7 @@
         });
 
         // Hàm tải tin nhắn từ máy chủ (Hỏi thăm liên tục)
-        fetchMessages
+
         async function fetchMessages() {
             if (isBanned) return; 
             try {
@@ -408,7 +410,7 @@
             if (confirm('Bạn muốn ghim thông báo này lên đầu trang?')) {
                 await fetch(`https://my-tale.onrender.com/api/messages/${msgId}/pin`, {
                     method: 'PUT',
-                    headers: { 'Authorization': 'Bearer ' + adminToken }
+                    headers: { 'Authorization': 'Bearer ' + activeModToken }
                 });
                 lastMessageCount = 0; // Ép tải lại toàn bộ
                 fetchMessages();
