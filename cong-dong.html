@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Nút mở Admin Dashboard (Sẽ được JS tự động hiện/ẩn dựa vào thẻ Admin) -->
-        <button id="btn-admin-dashboard" onclick="openAdminPanel()" class="hidden fixed bottom-6 left-6 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition-all z-40 flex items-center gap-2">
+        <button id="btn-admin-dashboard" onclick="openAdminPanel()" class="hidden fixed bottom-28 left-6 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition-all z-40 flex items-center gap-2">
             <i class="ph-bold ph-shield-check text-xl"></i> Quản Trị
         </button>
 
@@ -216,7 +216,7 @@
         }
         // Hàm render một tin nhắn ra màn hình (Giao diện bong bóng chat)
         function renderSingleMessage(msg) {
-            const isMe = msg.uuid === myUUID; 
+            const isMe = msg.uuid === plainUUID; 
             const adminToken = localStorage.getItem('mytales_token');
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full mb-2`; // Thêm mb-2 để chừa chỗ cho tim
