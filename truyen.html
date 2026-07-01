@@ -280,28 +280,29 @@
 }
 
         async function submitVote(chapterId, optionIndex) {
-            try {
-                // Gọi API của bạn (Bạn cần tạo endpoint này trên BE)
-                const response = await fetch(`https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}/vote`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ optionIndex: optionIndex })
-                });
-                
-                if(response.ok) {
-                    // Lưu mốc để user không vote lại
-                    localStorage.setItem(`voted_${chapterId}`, 'true');
-                    // Cập nhật số liệu local để giao diện đổi luôn lập tức mà không cần load lại trang
-                    currentStory.chaptersData[currentChapterIndex].pollData.options[optionIndex].votes += 1;
-                    // Vẽ lại UI sang chế độ xem tỷ lệ
-                    renderPollUI(currentStory.chaptersData[currentChapterIndex].pollData, chapterId);
-                } else {
-                    alert("Lỗi khi ghi nhận bình chọn!");
-                }
-            } catch(error) {
-                alert("Lỗi kết nối máy chủ!");
-            }
-        }
+          try {
+              // Dùng storyId thay cho currentReadingStoryId
+              const response = await fetch(`https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}/vote`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ optionIndex: optionIndex })
+              });
+              
+              const data = await response.json(); 
+              
+              if(response.ok) {
+                  localStorage.setItem(`voted_${chapterId}`, 'true');
+                  
+                  // Dùng thẳng biến currentStory đang lưu truyện hiện tại
+                  currentStory.chaptersData[currentChapterIndex].pollData.options[optionIndex].votes += 1;
+                  renderPollUI(currentStory.chaptersData[currentChapterIndex].pollData, chapterId);
+              } else {
+                  alert("❌ Lỗi: " + data.message);
+              }
+          } catch(error) {
+              alert("Lỗi kết nối máy chủ! Vui lòng thử lại.");
+          }
+      }
         function changeChapter(step) {
             const newIndex = currentChapterIndex + step;
             if (newIndex >= 0 && newIndex < currentStory.chaptersData.length) {
