@@ -283,14 +283,8 @@
         let lastMessageCount = 0; // Biến nhớ số lượng tin nhắn hiện tại
 
         // Nút gửi trên giao diện sẽ gọi hàm này thay vì hàm mô phỏng
+        // Nút gửi trên giao diện sẽ gọi hàm này thay vì hàm mô phỏng
         document.querySelector('button[onclick="sendMockMessage()"]').setAttribute('onclick', 'sendMessage()');
-
-        // Thay đổi sự kiện Enter để gọi hàm thật
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
 
         // Hàm tải tin nhắn từ máy chủ (Hỏi thăm liên tục)
 
