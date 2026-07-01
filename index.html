@@ -363,9 +363,12 @@
 
               <!-- Nội dung Truyện (Chữ hoặc Tranh sẽ đổ vào đây) -->
               <div id="read-content" class="reading-content text-text-main dark:text-night-text whitespace-pre-wrap">
-                  <!-- JS sẽ render nội dung -->
-              </div>
+                  </div>
 
+              <div id="read-poll-container" class="mt-10 hidden"></div>
+
+              <div class="flex items-center justify-between mt-12 pt-6 border-t border-sakura-mid/30 dark:border-slate-700">
+            
               <!-- Điều hướng Chương dưới cùng -->
               <div class="flex items-center justify-between mt-12 pt-6 border-t border-sakura-mid/30 dark:border-slate-700">
                   <button id="btn-prev-chap" onclick="changeChapter(-1)" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-sakura-light dark:bg-slate-800 text-sakura-dark dark:text-night-accent font-medium hover:bg-sakura-mid/30 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -659,24 +662,20 @@ async function fetchStoriesFromBackend() {
           
           const contentDiv = document.getElementById('read-content');
           
-          // Xử lý hiển thị dựa trên định dạng
-          if (story.format === 'truyen-chu') {
-              contentDiv.innerHTML = chapter.content;
-          } else if (story.format === 'truyen-tranh') {
-              // Ghép các ảnh thành một cuộn dài
-              const imagesHTML = chapter.images.map(src => `<img src="${src}" alt="Trang truyện" loading="lazy" />`).join('');
-              contentDiv.innerHTML = imagesHTML;
-          }
+          // ... (Các dòng code xử lý hiện chữ/tranh có sẵn của bạn) ...
 
-          // Cập nhật trạng thái nút điều hướng
-          const btnPrev = document.getElementById('btn-prev-chap');
-          const btnNext = document.getElementById('btn-next-chap');
-          const indicator = document.getElementById('chap-indicator');
-          
-          indicator.innerText = `${currentChapterIndex + 1} / ${story.chaptersData.length}`;
-          
           btnPrev.disabled = (currentChapterIndex === 0);
           btnNext.disabled = (currentChapterIndex === story.chaptersData.length - 1);
+          
+          // --- BỔ SUNG: HIỂN THỊ BẢNG BÌNH CHỌN NẾU CÓ ---
+          const pollContainer = document.getElementById('read-poll-container');
+          if(chapter.hasPoll && chapter.pollData) {
+              pollContainer.classList.remove('hidden');
+              renderPollUI(chapter.pollData, chapter._id);
+          } else {
+              pollContainer.classList.add('hidden');
+              pollContainer.innerHTML = '';
+          }
       }
 
       window.changeChapter = function(step) {
@@ -690,6 +689,71 @@ async function fetchStoriesFromBackend() {
           }
       }
 
+      // --- HỆ THỐNG BÌNH CHỌN ---
+      function renderPollUI(pollData, chapterId) {
+          const container = document.getElementById('read-poll-container');
+          const hasVoted = localStorage.getItem(`voted_${chapterId}`); 
+          const totalVotes = pollData.options.reduce((sum, opt) => sum + opt.votes, 0);
+
+          let html = `
+              <div class="bg-sakura-light/40 dark:bg-slate-800/40 p-6 md:p-8 rounded-3xl border border-sakura-mid/40 dark:border-slate-700 shadow-sm max-w-2xl mx-auto">
+                  <h3 class="font-bold text-xl text-text-main dark:text-night-text mb-6 flex items-center justify-center gap-2 text-center">
+                      <i class="ph-fill ph-chart-bar text-sakura-dark dark:text-night-accent text-2xl"></i> ${pollData.question}
+                  </h3>
+                  <div class="space-y-3">
+          `;
+
+          pollData.options.forEach((opt, index) => {
+              if(hasVoted) {
+                  const percent = totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
+                  html += `
+                      <div class="relative w-full bg-white dark:bg-night-surface rounded-xl h-12 overflow-hidden border border-sakura-mid/50 dark:border-slate-600 shadow-sm">
+                          <div class="absolute top-0 left-0 h-full bg-sakura-mid/40 dark:bg-blue-900/40 transition-all duration-1000 ease-out" style="width: ${percent}%"></div>
+                          <div class="absolute inset-0 flex items-center justify-between px-5 text-sm font-bold text-text-main dark:text-night-text">
+                              <span class="z-10">${opt.text}</span>
+                              <span class="z-10 text-sakura-dark dark:text-night-accent">${percent}%</span>
+                          </div>
+                      </div>
+                  `;
+              } else {
+                  html += `
+                      <button onclick="submitVote('${chapterId}', ${index})" class="w-full text-left px-5 py-3.5 bg-white dark:bg-night-surface hover:bg-sakura-light dark:hover:bg-slate-800 hover:-translate-y-0.5 border border-sakura-mid/60 dark:border-slate-600 rounded-xl text-sm font-bold text-text-main dark:text-night-text transition-all shadow-sm hover:shadow-md">
+                          ${opt.text}
+                      </button>
+                  `;
+              }
+          });
+
+          html += `
+                  </div>
+                  ${hasVoted ? `<p class="text-center text-xs text-text-muted dark:text-night-text-muted mt-4 font-medium"><i class="ph-fill ph-check-circle text-green-500"></i> Bạn đã tham gia bình chọn</p>` : ''}
+              </div>`;
+          container.innerHTML = html;
+      }
+
+      async function submitVote(chapterId, optionIndex) {
+          try {
+              const response = await fetch(`https://my-tale.onrender.com/api/stories/${currentReadingStoryId}/chapters/${chapterId}/vote`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ optionIndex: optionIndex })
+              });
+              
+              if(response.ok) {
+                  localStorage.setItem(`voted_${chapterId}`, 'true');
+                  // Cập nhật số liệu cục bộ để giao diện nảy ngay mà không cần tải lại
+                  const story = stories.find(s => s._id === currentReadingStoryId);
+                  story.chaptersData[currentChapterIndex].pollData.options[optionIndex].votes += 1;
+                  
+                  // Vẽ lại UI sang chế độ xem thanh phần trăm
+                  renderPollUI(story.chaptersData[currentChapterIndex].pollData, chapterId);
+              } else {
+                  alert("Lỗi khi ghi nhận bình chọn!");
+              }
+          } catch(error) {
+              alert("Lỗi kết nối máy chủ!");
+          }
+      }
       // --- STREAMING_CHUNK:Cập nhật Logic Điều hướng (Router)... ---
       function navigate(view) {
           // Lưu vết nếu rời khỏi màn hình chính để sau này Back lại
