@@ -374,7 +374,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeModToken }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeModToken },
                     body: JSON.stringify(payload)
                 });
 
