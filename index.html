@@ -739,19 +739,19 @@ async function fetchStoriesFromBackend() {
                   body: JSON.stringify({ optionIndex: optionIndex })
               });
               
+              const data = await response.json(); // Lấy dữ liệu phản hồi từ Server
+              
               if(response.ok) {
                   localStorage.setItem(`voted_${chapterId}`, 'true');
-                  // Cập nhật số liệu cục bộ để giao diện nảy ngay mà không cần tải lại
                   const story = stories.find(s => s._id === currentReadingStoryId);
                   story.chaptersData[currentChapterIndex].pollData.options[optionIndex].votes += 1;
-                  
-                  // Vẽ lại UI sang chế độ xem thanh phần trăm
                   renderPollUI(story.chaptersData[currentChapterIndex].pollData, chapterId);
               } else {
-                  alert("Lỗi khi ghi nhận bình chọn!");
+                  // ĐÃ FIX: In ra lỗi chi tiết từ máy chủ để dễ bắt bệnh
+                  alert("❌ Lỗi: " + data.message);
               }
           } catch(error) {
-              alert("Lỗi kết nối máy chủ!");
+              alert("Lỗi kết nối máy chủ! Vui lòng thử lại.");
           }
       }
       // --- STREAMING_CHUNK:Cập nhật Logic Điều hướng (Router)... ---
