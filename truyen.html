@@ -344,8 +344,12 @@
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            // Lọc ra bình luận đúng ngữ cảnh (-1 là chi tiết, số >= 0 là trong chương)
-            const filteredComments = currentComments.filter(c => c.chapterIndex === chapterContext);
+            // ĐÃ SỬA: Nếu ở trang chi tiết (chapterContext === -1) thì lấy TOÀN BỘ bình luận
+            // Nếu ở trong chương cụ thể (chapterContext >= 0) thì chỉ lấy bình luận của chương đó
+            const filteredComments = chapterContext === -1 
+                ? currentComments 
+                : currentComments.filter(c => c.chapterIndex === chapterContext);
+                
             const adminToken = localStorage.getItem('mytales_token');
 
             let html = `
@@ -376,6 +380,12 @@
                     
                     const isMyComment = cmt.uuid === myUUID;
                     
+                    // ĐÃ THÊM: Tạo nhãn "Chương X" nếu bình luận này thuộc về 1 chương VÀ người dùng đang xem ở trang chi tiết
+                    let chapterTag = '';
+                    if (chapterContext === -1 && cmt.chapterIndex >= 0) {
+                        chapterTag = `<span class="bg-sakura-light border border-sakura-mid/30 text-sakura-dark px-2 py-0.5 rounded-md text-[10px] ml-2 font-bold whitespace-nowrap shadow-sm"><i class="ph-fill ph-book-open mr-1"></i>Chương ${cmt.chapterIndex + 1}</span>`;
+                    }
+                    
                     html += `
                         <div class="flex gap-3 group">
                             <div class="w-10 h-10 rounded-full ${isMyComment ? 'bg-sakura-dark' : 'bg-gray-200'} text-white flex items-center justify-center font-bold flex-shrink-0 text-xs overflow-hidden shadow-sm">
@@ -384,7 +394,10 @@
                             <div class="flex-grow">
                                 <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-sakura-mid/20 inline-block max-w-full">
                                     <div class="flex items-center gap-2 justify-between mb-1">
-                                        <span class="font-bold text-sm ${isMyComment ? 'text-sakura-dark' : 'text-text-main'}">${cmt.uuid}</span>
+                                        <div class="flex items-center flex-wrap gap-1">
+                                            <span class="font-bold text-sm ${isMyComment ? 'text-sakura-dark' : 'text-text-main'}">${cmt.uuid}</span>
+                                            ${chapterTag}
+                                        </div>
                                         ${adminToken ? `<button onclick="deleteComment('${cmt._id}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xóa bình luận"><i class="ph-bold ph-trash"></i></button>` : ''}
                                     </div>
                                     <p class="text-text-main whitespace-pre-wrap break-words">${cmt.content}</p>
