@@ -122,8 +122,7 @@
         </div>
 
         <div class="p-3 sm:p-4 bg-white/95 sm:bg-white/80 border-t border-sakura-mid/30 flex gap-2 sm:gap-3 z-10 flex-shrink-0">
-            <input type="text" id="chat-input" placeholder="Viết một thông điệp yêu thương..." 
-                   class="flex-grow px-5 py-3 rounded-2xl border border-sakura-mid focus:outline-none focus:border-sakura-dark focus:ring-2 focus:ring-sakura-light text-text-main bg-white transition-all">
+            <textarea id="chat-input" rows="1" class="flex-grow px-4 py-2 rounded-xl bg-white/70 border border-sakura-mid/50 focus:outline-none focus:border-sakura-dark resize-none overflow-hidden transition-all whitespace-pre-wrap" placeholder="Nhắn gì đó đi... (Shift + Enter để xuống dòng)"></textarea>
             <button onclick="sendMockMessage()" class="bg-sakura-dark hover:bg-[#d48895] text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-sm flex items-center gap-2">
                 <i class="ph-fill ph-paper-plane-right text-xl"></i> <span class="hidden sm:inline">Gửi</span>
             </button>
@@ -151,10 +150,21 @@
         const replyBar = document.getElementById('reply-bar');
         const replyTargetText = document.getElementById('reply-target-text');
 
-        // Bắt sự kiện ấn phím Enter để gửi
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMockMessage();
+       // Tự động co giãn khung chat và xử lý Enter / Shift+Enter
+       
+        
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto'; // Reset chiều cao
+            this.style.height = (this.scrollHeight < 120 ? this.scrollHeight : 120) + 'px'; // Mở rộng tối đa 120px
+            if (this.value === '') this.style.height = 'auto';
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            // Nếu bấm Enter mà KHÔNG bấm Shift -> Gửi tin nhắn
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Ngăn việc tự động xuống dòng
+                // Gọi nút Gửi (đảm bảo id nút gửi của bạn là 'btn-send', hoặc gọi trực tiếp hàm sendMessage())
+                sendMessage(); 
             }
         });
 
@@ -183,10 +193,14 @@
         function renderSingleMessage(msg) {
             const isMe = msg.uuid === myUUID; 
             const adminToken = localStorage.getItem('mytales_token');
+            const modToken = localStorage.getItem('mytales_mod_token');
+            const activeModToken = adminToken || modToken;
             const wrapper = document.createElement('div');
             wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-full mb-2`; // Thêm mb-2 để chừa chỗ cho tim
             wrapper.id = `message-bubble-${msg.id}`;
-            
+            if (activeModToken) {
+                document.getElementById('btn-admin-dashboard').classList.remove('hidden');
+            }
             let displayContent = msg.content;
             let isTagged = false;
             const tagPattern = '@' + myUUID;
@@ -360,7 +374,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeModToken }
                     body: JSON.stringify(payload)
                 });
 
@@ -453,7 +467,7 @@
         // --- HÀM QUẢN TRỊ (ADMIN) ---
         async function openAdminPanel() {
             document.getElementById('admin-modal').classList.remove('hidden');
-            const adminToken = localStorage.getItem('mytales_token');
+            const activeModToken = localStorage.getItem('mytales_token') || localStorage.getItem('mytales_mod_token');
             const listContainer = document.getElementById('admin-reports-list');
             listContainer.innerHTML = '<p class="text-center">Đang tải dữ liệu...</p>';
 
@@ -484,7 +498,7 @@
         function closeAdminPanel() { document.getElementById('admin-modal').classList.add('hidden'); }
 
         async function resolveReport(reportId, action, reportedUuid) {
-            const adminToken = localStorage.getItem('mytales_token');
+            const activeModToken = localStorage.getItem('mytales_token') || localStorage.getItem('mytales_mod_token');
             await fetch(`https://my-tale.onrender.com/api/reports/${reportId}/resolve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
@@ -496,7 +510,7 @@
         async function manualUnban() {
             const target = document.getElementById('unban-input').value.trim();
             if (!target) return;
-            const adminToken = localStorage.getItem('mytales_token');
+            const activeModToken = localStorage.getItem('mytales_token') || localStorage.getItem('mytales_mod_token');
             const res = await fetch('https://my-tale.onrender.com/api/unban', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
