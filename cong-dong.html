@@ -337,6 +337,44 @@
                 console.error('Lỗi khi tải tin nhắn:', error);
             }
         }
+        // --- HÀM KIỂM TRA VÀ KHÓA CỨNG KHUNG CHAT ---
+        async function checkBanStatus() {
+            try {
+                // Gọi API để kiểm tra xem tài khoản/thiết bị này có bị Ban không
+                const response = await fetch(`https://my-tale.onrender.com/api/check-ban?uuid=${myUUID}`);
+                const data = await response.json();
+                
+                const sendBtn = document.querySelector('button[onclick="sendMessage()"]');
+
+                if (data.isBanned) {
+                    isBanned = true; // Cập nhật biến trạng thái
+                    
+                    // Khóa ô nhập liệu, đổi sang màu đỏ cảnh báo
+                    chatInput.value = 'Tài khoản/Thiết bị đã bị khóa vĩnh viễn.';
+                    chatInput.disabled = true;
+                    chatInput.classList.add('bg-rose-100', 'text-rose-600', 'cursor-not-allowed', 'border-rose-400');
+                    
+                    // Khóa luôn nút Gửi
+                    if(sendBtn) {
+                        sendBtn.disabled = true;
+                        sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                } else if (isBanned) {
+                    // Nếu trước đó bị Ban nhưng vừa được Admin "Ân xá", thì mở khóa lại
+                    isBanned = false;
+                    chatInput.value = '';
+                    chatInput.disabled = false;
+                    chatInput.classList.remove('bg-rose-100', 'text-rose-600', 'cursor-not-allowed', 'border-rose-400');
+                    
+                    if(sendBtn) {
+                        sendBtn.disabled = false;
+                        sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi kiểm tra trạng thái:', error);
+            }
+        }
         // Hàm gửi tin nhắn thật lên Trạm kiểm duyệt
         async function sendMessage() {
             if (isBanned) {
@@ -417,9 +455,14 @@
         }
         // Khởi động hệ thống khi mở web
         window.onload = () => {
-            fetchMessages(); // Tải lần đầu
-            // Thiết lập đồng hồ: Cứ 3 giây lại chạy hàm fetchMessages() 1 lần
-            setInterval(fetchMessages, 3000); 
+            fetchMessages(); // Tải tin nhắn lần đầu
+            checkBanStatus(); // Kiểm tra trạng thái Ban ngay khi vào web
+            
+            // Cứ 3 giây lại chạy hàm cập nhật 1 lần
+            setInterval(() => {
+                fetchMessages();
+                checkBanStatus(); 
+            }, 3000); 
         };
         // Xử lý ẩn/hiện nút Cuộn xuống
         const scrollBtn = document.getElementById('scroll-bottom-btn');
