@@ -123,8 +123,8 @@
 
         <div class="p-3 sm:p-4 bg-white/95 sm:bg-white/80 border-t border-sakura-mid/30 flex gap-2 sm:gap-3 z-10 flex-shrink-0">
             <textarea id="chat-input" rows="1" class="flex-grow px-4 py-2 rounded-xl bg-white/70 border border-sakura-mid/50 focus:outline-none focus:border-sakura-dark resize-none overflow-hidden transition-all whitespace-pre-wrap" placeholder="Nhắn gì đó đi... (Shift + Enter để xuống dòng)"></textarea>
-            <button onclick="sendMockMessage()" class="bg-sakura-dark hover:bg-[#d48895] text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-sm flex items-center gap-2">
-                <i class="ph-fill ph-paper-plane-right text-xl"></i> <span class="hidden sm:inline">Gửi</span>
+            <button id="btn-send" onclick="sendMessage()" class="bg-sakura-dark text-white px-4 py-2 rounded-xl...">
+                <i class="ph-bold ph-paper-plane-right"></i> Gửi
             </button>
         </div>
     </main>
