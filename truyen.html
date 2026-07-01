@@ -121,15 +121,16 @@
                 </div>
 
             <div class="flex items-center justify-between mt-12 pt-6 border-t border-sakura-mid/30">
-                <button id="btn-prev-chap" onclick="changeChapter(-1)" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-sakura-light text-sakura-dark font-medium hover:bg-sakura-mid/30 disabled:opacity-50">
+                <button id="btn-prev-chap" onclick="changeChapter(-1)" class="...">
                     <i class="ph-bold ph-caret-left"></i> Trước
                 </button>
                 <span id="chap-indicator" class="text-text-muted font-medium text-sm"></span>
-                <button id="btn-next-chap" onclick="changeChapter(1)" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-sakura-dark text-white font-medium disabled:opacity-50">
+                <button id="btn-next-chap" onclick="changeChapter(1)" class="...">
                     Sau <i class="ph-bold ph-caret-right"></i>
                 </button>
-                <div id="read-comments-container" class="mt-8 border-t border-sakura-mid/30 pt-6"></div>
             </div>
+            
+            <div id="read-comments-container" class="mt-8 border-t border-sakura-mid/30 pt-6"></div>
         </div>
 
     </main>
@@ -199,6 +200,7 @@
             document.getElementById('read-story-title').innerText = currentStory.title;
             
             renderChapter();
+            buildCommentUI('read-comments-container', currentChapterIndex);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -229,6 +231,7 @@
             if (newIndex >= 0 && newIndex < currentStory.chaptersData.length) {
                 currentChapterIndex = newIndex;
                 renderChapter();
+                buildCommentUI('read-comments-container', currentChapterIndex)
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
