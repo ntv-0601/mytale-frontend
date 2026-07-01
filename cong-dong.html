@@ -372,32 +372,33 @@
             chatInput.disabled = true;
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeModToken },
-                    body: JSON.stringify(payload)
-                });
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload) // payload là biến chứa nội dung tin nhắn của bạn
+            });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Gửi an toàn và thành công
-                    chatInput.value = '';
-                    cancelReply();
-                    fetchMessages(); // Ép tải lại ngay lập tức
-                } else if (response.status === 403) {
-                    // PHÁT HIỆN TỪ NGỮ VI PHẠM -> KÍCH HOẠT BAN (CẤM)
-                    isBanned = true;
-                    alert("🚨 " + data.message); // Báo động đỏ
-                    chatInput.value = 'Thiết bị đã bị khóa mõm.';
-                    chatInput.classList.add('bg-rose-100', 'text-rose-600', 'cursor-not-allowed', 'border-rose-400');
-                } else {
-                    alert("Lỗi: " + data.message);
-                }
-            } catch (error) {
-                console.error("Lỗi gửi tin nhắn:", error);
-                alert("Không thể kết nối đến máy chủ.");
-            } finally {
+            if (response.ok) {
+                // Nếu thành công thì xóa khung nhập và tải lại tin nhắn
+                document.getElementById('chat-input').value = '';
+                document.getElementById('chat-input').style.height = 'auto'; // Reset chiều cao textarea
+                cancelReply(); 
+                fetchMessages();
+            } else {
+                // ĐIỂM NÂNG CẤP: Đọc lời nhắn cảnh cáo từ Backend
+                const errorData = await response.json();
+                
+                // Hiển thị cảnh báo chặn Link hoặc cấm ngôn từ
+                alert("⚠️ THÔNG BÁO TỪ HỆ THỐNG:\n" + errorData.message);
+                
+                // (Tùy chọn) Ẩn cái modal lỗi đen xì cũ của bạn đi nếu có gọi nó
+                // hideErrorModal(); 
+            }
+        } catch (error) {
+            console.error(error);
+            // Chỉ khi nào đứt mạng thật sự thì mới văng vào đây
+            alert("Mạng có vấn đề, không thể kết nối đến máy chủ!");
+        } finally {
                 if (!isBanned) {
                     chatInput.disabled = false;
                     chatInput.focus();
