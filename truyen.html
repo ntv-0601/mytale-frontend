@@ -178,6 +178,7 @@
                 renderDetail();
                 loadRating(); 
                 setupStarEvents();
+                setInterval(loadRating, 5000);
             } catch (error) {
                 console.error(error);
                 alert("Lỗi kết nối máy chủ!");
@@ -541,6 +542,7 @@
         });
         // --- HỆ THỐNG ĐÁNH GIÁ SAO ĐỘNG ---
         let currentRatingScore = 0;
+        let isHoveringStars = false; // BỔ SUNG: Biến theo dõi xem có đang rê chuột không
         
         // Mượn danh tính ẩn danh để hệ thống biết ai đã đánh giá
         let myAnonUUID = localStorage.getItem('mytale_anon_uuid');
@@ -558,7 +560,12 @@
                     currentRatingScore = data.average;
                     document.getElementById('rating-score').innerText = data.average.toFixed(1);
                     document.getElementById('rating-count').innerText = data.count;
-                    updateStarsUI(data.average);
+                    
+                    // BỔ SUNG: Chỉ vẽ lại giao diện sao nếu chuột đang ở NGOÀI, 
+                    // tránh làm giật hình khi người dùng đang vuốt để chọn mức sao
+                    if (!isHoveringStars) {
+                        updateStarsUI(data.average);
+                    }
                 }
             } catch (e) { console.error('Lỗi tải đánh giá'); }
         }
@@ -584,6 +591,11 @@
             const starContainer = document.getElementById('star-rating');
             if(!starContainer) return;
 
+            // BỔ SUNG: Đánh dấu đang di chuột VÀO vùng sao
+            starContainer.addEventListener('mouseenter', () => {
+                isHoveringStars = true;
+            });
+
             // Khi rê chuột qua lại: Tính toán nửa sao dựa vào tọa độ con trỏ
             starContainer.addEventListener('mousemove', (e) => {
                 const rect = starContainer.getBoundingClientRect();
@@ -594,6 +606,12 @@
                 if(hoverScore > 5) hoverScore = 5;
                 if(hoverScore < 0.5) hoverScore = 0.5;
                 updateStarsUI(hoverScore);
+            });
+
+            // Khi kéo chuột ra ngoài: Trả lại số sao thực tế
+            starContainer.addEventListener('mouseleave', () => {
+                isHoveringStars = false; // BỔ SUNG: Đánh dấu đã kéo chuột ra NGOÀI
+                updateStarsUI(currentRatingScore);
             });
 
             // Khi kéo chuột ra ngoài: Trả lại số sao thực tế
