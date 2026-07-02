@@ -183,7 +183,9 @@
             document.body.classList.add('justify-start');
             document.getElementById('qtv-name-display').innerText = localStorage.getItem('mytales_qtv_name');
             loadMarquee();
-            async function loadRules() {
+            
+        }
+        async function loadRules() {
             try {
                 const res = await fetch(`${API}/rules`);
                 const data = await res.json();
@@ -203,8 +205,6 @@
                 else alert("❌ Bạn không có quyền thực hiện thao tác này!");
             } catch (e) { alert("Lỗi kết nối máy chủ!"); }
         }
-        }
-
         async function registerQTV() {
             const password = document.getElementById('reg-pass').value;
             if(!password) return alert("Vui lòng nhập mật khẩu!");
