@@ -8,9 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Nút mở Admin Dashboard (Sẽ được JS tự động hiện/ẩn dựa vào thẻ Admin) -->
-        <button id="btn-admin-dashboard" onclick="openAdminPanel()" class="hidden fixed bottom-28 left-6 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition-all z-40 flex items-center gap-2">
-            <i class="ph-bold ph-shield-check text-xl"></i> Quản Trị
-        </button>
 
         <!-- Khung Admin Dashboard (Modal) -->
         <div id="admin-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -73,20 +70,22 @@
 <body class="h-[100dvh] flex flex-col sm:p-4 md:p-8 overflow-hidden bg-sakura-light">
 
     <header class="max-w-4xl mx-auto w-full p-3 sm:p-0 sm:mb-4 flex justify-between items-center flex-shrink-0 bg-white/80 sm:bg-transparent shadow-sm sm:shadow-none z-20">
-        <!-- Gom 2 nút vào một nhóm -->
-        <div class="flex items-center gap-2">
-            <button onclick="window.location.href='index.html'" class="flex items-center gap-1 sm:gap-2 text-sakura-dark font-bold bg-white px-3 sm:px-4 py-2 rounded-full shadow-sm border border-sakura-mid/30 hover:bg-sakura-light transition-colors text-sm sm:text-base">
-                <i class="ph-bold ph-house"></i> <span class="hidden sm:inline">Trang Chủ</span>
-            </button>
-            
-            <!-- Nút Trạm QTV ẩn -->
-            <button id="btn-back-qtv" onclick="window.location.href='qtv.html'" class="hidden items-center gap-1 sm:gap-2 text-blue-600 font-bold bg-blue-50 px-3 sm:px-4 py-2 rounded-full shadow-sm border border-blue-200 hover:bg-blue-100 transition-colors text-sm sm:text-base">
-                <i class="ph-bold ph-shield-star"></i> Trạm QTV
-            </button>
-        </div>
+     <div class="flex items-center gap-2 flex-wrap">
+         <button onclick="window.location.href='index.html'" class="flex items-center gap-1 sm:gap-2 text-sakura-dark font-bold bg-white px-3 sm:px-4 py-2 rounded-full shadow-sm border border-sakura-mid/30 hover:bg-sakura-light transition-colors text-sm sm:text-base">
+             <i class="ph-bold ph-house"></i> <span class="hidden sm:inline">Trang Chủ</span>
+         </button>
 
-        <div class="font-handwriting text-2xl sm:text-3xl font-bold text-sakura-dark">Góc Tâm Sự</div>
-    </header>
+         <button id="btn-back-qtv" onclick="window.location.href='qtv.html'" class="hidden items-center gap-1 sm:gap-2 text-blue-600 font-bold bg-blue-50 px-3 sm:px-4 py-2 rounded-full shadow-sm border border-blue-200 hover:bg-blue-100 transition-colors text-sm sm:text-base">
+             <i class="ph-bold ph-shield-star"></i> Trạm QTV
+         </button>
+
+         <button id="btn-admin-dashboard" onclick="openAdminPanel()" class="hidden items-center gap-1 sm:gap-2 text-purple-600 font-bold bg-purple-50 px-3 sm:px-4 py-2 rounded-full shadow-sm border border-purple-200 hover:bg-purple-100 transition-colors text-sm sm:text-base">
+             <i class="ph-bold ph-shield-check"></i> <span class="hidden md:inline">Quản Trị</span>
+         </button>
+     </div>
+
+     <div class="font-handwriting text-2xl sm:text-3xl font-bold text-sakura-dark">Góc Tâm Sự</div>
+ </header>
 
     <main class="flex-grow max-w-4xl mx-auto w-full relative flex flex-col glass-panel sm:rounded-3xl shadow-sm border-0 sm:border border-white overflow-hidden">
         
@@ -549,8 +548,10 @@
             }
         });
         // Bật nút Admin nếu có thẻ
-        if (localStorage.getItem('mytales_token')) {
-            document.getElementById('btn-admin-dashboard').classList.remove('hidden');
+        const btnAdmin = document.getElementById('btn-admin-dashboard');
+        if (localStorage.getItem('mytales_token') && btnAdmin) {
+            btnAdmin.classList.remove('hidden');
+            btnAdmin.classList.add('flex'); // Ép kiểu Flex để icon và chữ cân đối
         }
 
         // --- HÀM TỐ CÁO (USER) ---
