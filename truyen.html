@@ -69,6 +69,19 @@
                     <button id="btn-read-first" class="w-full bg-sakura-dark text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2">
                         <i class="ph-fill ph-book-open"></i> ĐỌC TỪ ĐẦU
                     </button>
+                    <div id="rating-container" class="mt-5 w-full bg-white/60 p-4 rounded-2xl shadow-sm border border-sakura-mid/40 text-center relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-sakura-light/50 to-transparent -z-10"></div>
+                        <p class="text-xs text-text-muted font-bold mb-2 uppercase tracking-widest">Đánh giá tác phẩm</p>
+                        
+                        <div id="star-rating" class="flex items-center justify-center gap-1 cursor-pointer w-max mx-auto py-1">
+                            <i class="ph-bold ph-spinner animate-spin text-sakura-dark"></i>
+                        </div>
+                        
+                        <p class="text-xs text-text-muted mt-2 font-medium">
+                            <span id="rating-score" class="font-bold text-sakura-dark text-lg">0.0</span>/5 
+                            (<span id="rating-count">0</span> lượt)
+                        </p>
+                    </div>
                 </div>
 
                 <div class="w-full md:w-2/3 lg:w-3/4">
@@ -163,6 +176,8 @@
                 }
                 fetchComments();
                 renderDetail();
+                loadRating(); 
+                setupStarEvents();
             } catch (error) {
                 console.error(error);
                 alert("Lỗi kết nối máy chủ!");
@@ -524,6 +539,105 @@
                 }
             }, 1000);
         });
+        // --- HỆ THỐNG ĐÁNH GIÁ SAO ĐỘNG ---
+        let currentRatingScore = 0;
+        
+        // Mượn danh tính ẩn danh để hệ thống biết ai đã đánh giá
+        let myAnonUUID = localStorage.getItem('mytale_anon_uuid');
+        if (!myAnonUUID) {
+            myAnonUUID = 'anon_' + Math.random().toString(36).substr(2, 6);
+            localStorage.setItem('mytale_anon_uuid', myAnonUUID);
+        }
+
+        // Tải điểm từ Server
+        async function loadRating() {
+            try {
+                const res = await fetch(`https://my-tale.onrender.com/api/stories/${storyId}/rating`);
+                if (res.ok) {
+                    const data = await res.json();
+                    currentRatingScore = data.average;
+                    document.getElementById('rating-score').innerText = data.average.toFixed(1);
+                    document.getElementById('rating-count').innerText = data.count;
+                    updateStarsUI(data.average);
+                }
+            } catch (e) { console.error('Lỗi tải đánh giá'); }
+        }
+
+        // Vẽ sao ra màn hình
+        function updateStarsUI(score) {
+            const container = document.getElementById('star-rating');
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (score >= i) {
+                    html += `<i class="ph-fill ph-star text-yellow-400 text-3xl drop-shadow-sm transition-transform hover:-translate-y-1"></i>`;
+                } else if (score >= i - 0.5) {
+                    html += `<i class="ph-fill ph-star-half text-yellow-400 text-3xl drop-shadow-sm transition-transform hover:-translate-y-1"></i>`;
+                } else {
+                    html += `<i class="ph ph-star text-yellow-400 text-3xl transition-transform hover:-translate-y-1 text-gray-300"></i>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        // Thuật toán di chuột và bấm
+        function setupStarEvents() {
+            const starContainer = document.getElementById('star-rating');
+            if(!starContainer) return;
+
+            // Khi rê chuột qua lại: Tính toán nửa sao dựa vào tọa độ con trỏ
+            starContainer.addEventListener('mousemove', (e) => {
+                const rect = starContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = x / rect.width;
+                // Thuật toán làm tròn đến 0.5 gần nhất
+                let hoverScore = Math.ceil(percent * 10) / 2;
+                if(hoverScore > 5) hoverScore = 5;
+                if(hoverScore < 0.5) hoverScore = 0.5;
+                updateStarsUI(hoverScore);
+            });
+
+            // Khi kéo chuột ra ngoài: Trả lại số sao thực tế
+            starContainer.addEventListener('mouseleave', () => {
+                updateStarsUI(currentRatingScore);
+            });
+
+            // Khi bấm chuột: Chốt số điểm và gửi đi ngầm
+            starContainer.addEventListener('click', async (e) => {
+                const rect = starContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = x / rect.width;
+                let score = Math.ceil(percent * 10) / 2;
+                if(score > 5) score = 5;
+                if(score < 0.5) score = 0.5;
+                
+                try {
+                    // Cập nhật giao diện tạm thời cho mượt
+                    updateStarsUI(score);
+                    
+                    // Bắn dữ liệu ngầm xuống máy chủ
+                    const res = await fetch(`https://my-tale.onrender.com/api/stories/${storyId}/rating`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uuid: myAnonUUID, score: score })
+                    });
+                    
+                    if(res.ok) {
+                        const data = await res.json();
+                        currentRatingScore = data.average;
+                        document.getElementById('rating-score').innerText = data.average.toFixed(1);
+                        document.getElementById('rating-count').innerText = data.count;
+                        updateStarsUI(data.average);
+                        
+                        // Hiệu ứng phình to ăn mừng chốt vote thành công
+                        starContainer.classList.add('scale-110');
+                        setTimeout(() => starContainer.classList.remove('scale-110'), 200);
+                    }
+                } catch (err) {
+                    alert("Lỗi mạng! Đánh giá chưa được ghi nhận.");
+                    updateStarsUI(currentRatingScore);
+                }
+            });
+        }
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
