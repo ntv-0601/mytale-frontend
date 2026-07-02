@@ -700,12 +700,44 @@
             }
         }
         // Bật/tắt bảng chọn Cảm xúc
-        function toggleReactPicker(msgId) {
-            // Đóng tất cả bảng khác trước khi mở
-            document.querySelectorAll('div[id^="react-picker-"]').forEach(el => el.classList.add('hidden'));
+        window.toggleOptionsMenu = function(event, msgId) {
+            event.stopPropagation(); // Ngăn chặn click nhầm ra ngoài
+            
+            // Đóng tất cả menu khác đang mở
+            document.querySelectorAll('div[id^="options-menu-"]').forEach(menu => {
+                if (menu.id !== `options-menu-${msgId}`) menu.classList.add('hidden');
+            });
+            document.querySelectorAll('div[id^="react-picker-"]').forEach(picker => picker.classList.add('hidden'));
+            
+            // Mở menu của tin nhắn hiện tại
+            const menu = document.getElementById(`options-menu-${msgId}`);
+            if(menu) menu.classList.toggle('hidden');
+        };
+
+        // Bật/tắt bảng chọn Cảm xúc
+        window.toggleReactPicker = function(event, msgId) {
+            event.stopPropagation();
+            
+            // Đóng tất cả các bảng cảm xúc khác
+            document.querySelectorAll('div[id^="react-picker-"]').forEach(el => {
+                if(el.id !== `react-picker-${msgId}`) el.classList.add('hidden');
+            });
+            
+            // Mở bảng cảm xúc hiện tại, đồng thời ẩn cái menu 3 chấm đi cho gọn
             const picker = document.getElementById(`react-picker-${msgId}`);
             if (picker) picker.classList.toggle('hidden');
-        }
+            
+            const menu = document.getElementById(`options-menu-${msgId}`);
+            if(menu) menu.classList.add('hidden');
+        };
+
+        // Lắng nghe sự kiện click trên toàn màn hình: Chạm ra ngoài thì đóng hết Menu
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.option-dropdown-container')) {
+                document.querySelectorAll('div[id^="options-menu-"]').forEach(menu => menu.classList.add('hidden'));
+                document.querySelectorAll('div[id^="react-picker-"]').forEach(picker => picker.classList.add('hidden'));
+            }
+        });
 
         // Gửi cảm xúc lên Backend
         async function submitReaction(msgId, type) {
