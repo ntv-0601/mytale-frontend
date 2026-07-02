@@ -196,14 +196,22 @@
         async function updateRules() {
             const lines = document.getElementById('rules-input').value.split('\n').filter(l => l.trim() !== '');
             const token = localStorage.getItem('mytales_qtv_token') || localStorage.getItem('mytales_token');
+            
             try {
                 const res = await fetch(`${API}/rules`, {
                     method: 'PUT', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
                     body: JSON.stringify({ texts: lines })
                 });
-                if(res.ok) alert("🎉 Cập nhật Nội quy thành công!");
-                else alert("❌ Bạn không có quyền thực hiện thao tác này!");
-            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
+                
+                if(res.ok) {
+                    alert("🎉 Cập nhật Nội quy thành công!");
+                } else {
+                    const data = await res.json().catch(() => ({ message: "Máy chủ chưa cập nhật API này (Lỗi 404)!" }));
+                    alert("❌ Lỗi từ máy chủ: " + data.message);
+                }
+            } catch (e) { 
+                alert("Lỗi kết nối! Máy chủ Render có thể đang khởi động lại, hãy đợi 1 phút nhé."); 
+            }
         }
         async function registerQTV() {
             const password = document.getElementById('reg-pass').value;
@@ -265,9 +273,16 @@
                     method: 'PUT', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
                     body: JSON.stringify({ texts: lines })
                 });
-                if(res.ok) alert("🎉 Cập nhật dòng thông báo thành công!");
-                else alert("❌ Bạn không có quyền thực hiện thao tác này!");
-            } catch (e) { alert("Lỗi kết nối máy chủ!"); }
+                
+                if(res.ok) {
+                    alert("🎉 Cập nhật dòng thông báo thành công!");
+                } else {
+                    const data = await res.json().catch(() => ({ message: "Máy chủ chưa cập nhật API này (Lỗi 404)!" }));
+                    alert("❌ Lỗi từ máy chủ: " + data.message);
+                }
+            } catch (e) { 
+                alert("Lỗi kết nối! Máy chủ Render có thể đang khởi động lại, hãy đợi 1 phút nhé."); 
+            }
         }
     </script>
 </body>
