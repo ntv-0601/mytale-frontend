@@ -593,8 +593,11 @@ async function fetchStoriesFromBackend() {
         const story = stories[storyIndex];
         
         // 1. Ảo thuật giao diện
+        // 1. Ảo thuật giao diện
         story.liked = !story.liked;
-        story.likes = (story.likes || 0) + (story.liked ? 1 : -1); 
+        
+        // ĐÃ FIX: Dùng Math.max để đảm bảo số tim không bao giờ bị rớt xuống dưới 0
+        story.likes = Math.max(0, (story.likes || 0) + (story.liked ? 1 : -1));
         
         countSpan.textContent = story.likes;
         btn.title = story.liked ? 'Bỏ thích' : 'Yêu thích';
