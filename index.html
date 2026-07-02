@@ -220,12 +220,14 @@
     <main class="flex-grow container mx-auto px-4 md:px-8 py-8 relative z-10">
       
       <!-- VIEW: TRANG CHỦ & THƯ VIỆN -->
+      <!-- VIEW: TRANG CHỦ & THƯ VIỆN -->
       <div id="view-stories" class="view-section active">
         
         <!-- BỐ CỤC LƯỚI: BANNER BÊN TRÁI, NỘI QUY BÊN PHẢI -->
         <div class="max-w-7xl mx-auto mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <section id="hero-banner" class="lg:col-span-2 relative glass-panel rounded-3xl p-8 md:p-12 flex flex-col-reverse md:flex-row items-center gap-8 overflow-hidden shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border h-full">
+            <!-- Hero Banner (Chiếm 2/3 diện tích) -->
+            <section id="hero-banner" class="lg:col-span-2 relative glass-panel rounded-3xl p-8 md:p-12 flex flex-col-reverse md:flex-row items-center gap-8 overflow-hidden shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border h-full">
               <div class="absolute -top-20 -right-20 w-64 h-64 bg-sakura-light dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"></div>
               
               <div class="flex-1 text-center md:text-left z-10">
@@ -252,18 +254,21 @@
               </div>
             </section>
 
-        <div class="glass-panel rounded-3xl p-6 shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border flex flex-col h-full bg-white/70 dark:bg-slate-800/70">
+            <!-- Bảng Nội Quy (Chiếm 1/3 diện tích) -->
+            <div class="glass-panel rounded-3xl p-6 shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border flex flex-col h-full bg-white/70 dark:bg-slate-800/70">
                 <h3 class="font-handwriting text-3xl font-bold text-sakura-dark dark:text-night-accent mb-4 flex items-center gap-3 border-b border-sakura-mid/30 dark:border-slate-700 pb-3">
                     <i class="ph-fill ph-scroll"></i> Góc Nội Quy
                 </h3>
                 <ul id="rules-container" class="space-y-3 text-text-main dark:text-night-text flex-grow overflow-y-auto pr-2" style="max-height: 320px;">
-                    <!-- JS sẽ đổ nội quy vào đây -->
                     <li class="flex items-center gap-2 text-text-muted">
                         <i class="ph-bold ph-spinner animate-spin text-sakura-dark text-xl"></i>
                         <span>Đang tải nội quy...</span>
                     </li>
                 </ul>
             </div>
+            
+        </div> <!-- THẺ ĐÓNG QUAN TRỌNG NẰM Ở ĐÂY -->
+        
         <div id="section-header" class="max-w-6xl mx-auto mb-6 hidden text-center">
             <h2 id="section-title" class="font-handwriting text-4xl text-sakura-dark dark:text-night-accent mb-2">Thư viện</h2>
             <p id="section-desc" class="text-text-muted dark:text-night-text-muted">Khám phá các tựa truyện yêu thích.</p>
@@ -948,12 +953,8 @@ async function fetchStoriesFromBackend() {
               }
           } catch (e) { console.error("Lỗi tải Marquee"); }
       }
-      // Gọi nó bên trong sự kiện khởi động
-      window.addEventListener('DOMContentLoaded', () => {
-          fetchStoriesFromBackend(); 
-          startEffects();
-          loadDynamicMarquee(); // <-- GỌI Ở ĐÂY
-      });
+
+      // 2. Tải bảng Nội Quy
       async function loadRulesDisplay() {
           try {
               const res = await fetch('https://my-tale.onrender.com/api/rules');
@@ -963,19 +964,19 @@ async function fetchStoriesFromBackend() {
                   container.innerHTML = texts.map(t => `
                       <li class="flex items-start gap-3 bg-white/50 dark:bg-night-surface p-3 rounded-xl border border-sakura-mid/20 dark:border-slate-700 shadow-sm">
                           <i class="ph-fill ph-star-four text-sakura-dark dark:text-night-accent mt-0.5 flex-shrink-0 text-lg"></i>
-                          <span class="font-medium leading-relaxed">${t}</span>
+                          <span class="font-medium leading-relaxed text-sm md:text-base">${t}</span>
                       </li>
                   `).join('');
               }
           } catch (e) { console.error("Lỗi tải Nội quy"); }
       }
 
-      // Gọi nó bên trong sự kiện khởi động
+      // 3. Kích hoạt mọi thứ khi web vừa mở lên
       window.addEventListener('DOMContentLoaded', () => {
           fetchStoriesFromBackend(); 
           startEffects();
-          loadDynamicMarquee();
-          loadRulesDisplay(); // <-- Gọi hàm tải nội quy ở đây
+          loadDynamicMarquee(); 
+          loadRulesDisplay(); 
       });
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
