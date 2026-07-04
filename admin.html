@@ -996,62 +996,69 @@ function loadChapterDataForEdit() {
 }
 
 // Xử lý gửi dữ liệu cập nhật
-const editForm = document.getElementById('edit-form');
-const editMsg = document.getElementById('edit-msg');
+// Xử lý gửi dữ liệu cập nhật lên Server (Đã fix lỗi ReferenceError)
+const formChinhSua = document.getElementById('edit-form');
+const thongBaoSua = document.getElementById('edit-msg');
 
-editForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('mytales_token');
-    if (!token) return alert('Phiên đăng nhập hết hạn!');
+if(formChinhSua) {
+    formChinhSua.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('mytales_token');
+        if (!token) return alert('Phiên đăng nhập hết hạn!');
 
-    const storyId = document.getElementById('edit-story-id').value;
-    const chapterId = document.getElementById('edit-chapter-id').value;
-    
-    if (!storyId) return alert('Vui lòng chọn truyện cần sửa!');
+        const storyId = document.getElementById('edit-story-id').value;
+        const chapterId = document.getElementById('edit-chapter-id').value;
+        
+        if (!storyId) return alert('Vui lòng chọn truyện cần sửa!');
 
-    const isEditingChapter = chapterId !== "";
-    const endpoint = isEditingChapter 
-        ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
-        : `https://my-tale.onrender.com/api/stories/${storyId}`;
+        const isEditingChapter = chapterId !== "";
+        // Gọi lên API của Render
+        const endpoint = isEditingChapter 
+            ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
+            : `https://my-tale.onrender.com/api/stories/${storyId}`;
 
-    const payload = isEditingChapter 
-        ? {
-            title: document.getElementById('edit-title').value,
-            content: document.getElementById('edit-content').value
-        } 
-        : {
-            title: document.getElementById('edit-title').value,
-            author: document.getElementById('edit-author').value,
-            desc: document.getElementById('edit-content').value,
-            status: document.getElementById('edit-status').value
-        };
+        const payload = isEditingChapter 
+            ? {
+                title: document.getElementById('edit-title').value,
+                content: document.getElementById('edit-content').value
+            } 
+            : {
+                title: document.getElementById('edit-title').value,
+                author: document.getElementById('edit-author').value,
+                desc: document.getElementById('edit-content').value,
+                status: document.getElementById('edit-status').value
+            };
 
-    try {
-        const response = await fetch(endpoint, {
-            method: 'PUT', // Hoặc 'PATCH' tùy thuộc vào Backend của bạn
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify(payload)
-        });
+        try {
+            const response = await fetch(endpoint, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload)
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            editMsg.innerText = "🎉 Cập nhật thành công!";
-            editMsg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
-            loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
-            setTimeout(() => { editMsg.classList.add('hidden'); }, 3000);
-        } else {
-            editMsg.innerText = "❌ " + (data.message || "Lỗi cập nhật");
-            editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            if (response.ok) {
+                thongBaoSua.innerText = "🎉 Cập nhật thành công!";
+                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+                thongBaoSua.classList.remove('hidden');
+                loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
+                setTimeout(() => { thongBaoSua.classList.add('hidden'); }, 3000);
+            } else {
+                thongBaoSua.innerText = "❌ " + (data.message || "Lỗi cập nhật");
+                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+                thongBaoSua.classList.remove('hidden');
+            }
+        } catch (error) {
+            thongBaoSua.innerText = "❌ Lỗi kết nối đến máy chủ!";
+            thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            thongBaoSua.classList.remove('hidden');
         }
-    } catch (error) {
-        editMsg.innerText = "❌ Lỗi kết nối đến máy chủ!";
-        editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
-    }
-});
+    });
+}
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
