@@ -117,11 +117,9 @@
             </button>
         </form>
     </div>
-
     <div id="admin-dashboard" class="hidden w-full max-w-7xl glass-panel p-6 md:p-10 rounded-[2.5rem] relative z-10">
         
-        <!-- Header Dashboard -->
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-sakura-mid/40 pb-6 gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-10 border-b border-sakura-mid/40 pb-6 gap-4">
             <div class="flex items-center gap-3">
                 <i class="ph-fill ph-flower-lotus text-4xl text-sakura-dark drop-shadow-sm"></i>
                 <h2 class="text-3xl sm:text-4xl font-bold text-sakura-dark font-handwriting">Bảng Điều Khiển Hệ Thống</h2>
@@ -131,183 +129,171 @@
             </button>
         </div>
 
-        <!-- Layout chính của Dashboard (1 cột nhỏ bên trái, 1 cột lớn bên phải) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="flex flex-col gap-10">
             
-            <!-- Cột trái: Thêm Truyện Mới -->
-            <div class="bg-white/60 p-6 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden h-fit">
-                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
-                    <i class="ph-fill ph-plus-circle text-sakura-dark"></i> Thêm Truyện Mới
-                </h3>
-                <form id="add-story-form" class="space-y-4 relative z-10">
-                    <div>
-                        <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện</label>
-                        <input type="text" id="story-title" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Định dạng</label>
-                            <select id="story-format" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
-                                <option value="truyen-chu">Truyện Chữ</option>
-                                <option value="truyen-tranh">Truyện Tranh</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Tác giả</label>
-                            <input type="text" id="story-author" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
-                        
-                        <div class="flex items-center gap-3 mb-2">
-                            <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
-                                <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
-                            </button>
-                            <input type="file" id="cover-file-input" accept="image/*" class="hidden">
-                            <span id="cover-upload-status" class="text-sm font-bold"></span>
-                        </div>
-
-                        <input type="text" id="story-image" placeholder="Link ảnh sẽ tự động hiện ở đây sau khi tải lên..." class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-text-muted mb-1">Thể loại (cách nhau dấu phẩy)</label>
-                        <input type="text" id="story-tags" placeholder="VD: hoc-duong, tinh-cam" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-text-muted mb-1">Mô tả ngắn</label>
-                        <textarea id="story-desc" rows="3" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-none"></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-4 transition-all">
-                        XUẤT BẢN TRUYỆN
-                    </button>
-                    <div id="add-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
-                </form>
-            </div>
-            <!-- Cột/Khu vực Chỉnh sửa Truyện & Chương -->
-<div class="lg:col-span-3 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col mt-8">
-    <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
-        <i class="ph-fill ph-pencil-simple text-sakura-dark"></i> Chỉnh Sửa Truyện & Chương
-    </h3>
-    
-    <form id="edit-form" class="space-y-5 relative z-10">
-        <!-- Phần Chọn Truyện & Chương để sửa -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-4 bg-sakura-light/50 rounded-xl border border-sakura-mid/30">
-            <div>
-                <label class="block text-sm font-bold text-text-muted mb-1">Chọn truyện cần sửa</label>
-                <select id="edit-story-id" onchange="loadStoryDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
-                    <option value="">-- Chọn bộ truyện --</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-bold text-text-muted mb-1">Chọn chương cần sửa (Bỏ trống nếu chỉ sửa thông tin truyện)</label>
-                <select id="edit-chapter-id" onchange="loadChapterDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
-                    <option value="">-- Chọn truyện trước --</option>
-                </select>
-            </div>
-        </div>
-
-        <hr class="border-sakura-mid/30">
-
-        <!-- Các trường thông tin (Sẽ tự động điền khi chọn) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-                <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện / Tiêu đề chương</label>
-                <input type="text" id="edit-title" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-bold text-text-muted mb-1">Tác giả (Chỉ dành cho truyện)</label>
-                <input type="text" id="edit-author" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-sm font-bold text-text-muted mb-1">Trạng thái truyện</label>
-            <select id="edit-status" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
-                <option value="Đang ra">Đang ra</option>
-                <option value="Hoàn thành">Hoàn thành</option>
-                <option value="Tạm ngưng">Tạm ngưng</option>
-            </select>
-        </div>
-
-        <div class="flex-grow flex flex-col">
-            <label class="block text-sm font-bold text-text-muted mb-2">Giới thiệu (nếu sửa truyện) / Nội dung (nếu sửa chương)</label>
-            <textarea id="edit-content" rows="10" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none leading-relaxed flex-grow resize-y"></textarea>
-        </div>
-
-        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all shadow-sm flex justify-center items-center gap-2">
-            <i class="ph-bold ph-floppy-disk text-xl"></i> LƯU THAY ĐỔI
-        </button>
-        <div id="edit-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
-    </form>
-</div>    
-            <div class="lg:col-span-2 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col">
-                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
-                    <i class="ph-fill ph-book-open-text text-sakura-dark"></i> Viết Chương Mới
-                </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
-                <form id="add-chapter-form" class="space-y-5 relative z-10 flex-grow flex flex-col">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden">
+                    <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                        <i class="ph-fill ph-plus-circle text-sakura-dark"></i> Thêm Truyện Mới
+                    </h3>
+                    <form id="add-story-form" class="space-y-4 relative z-10">
                         <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Chọn bộ truyện</label>
-                            <select id="chapter-story-id" required class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
-                                <option value="">-- Đang tải danh sách truyện... --</option>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện</label>
+                            <input type="text" id="story-title" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Định dạng</label>
+                                <select id="story-format" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                                    <option value="truyen-chu">Truyện Chữ</option>
+                                    <option value="truyen-tranh">Truyện Tranh</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Tác giả</label>
+                                <input type="text" id="story-author" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
+                            <div class="flex items-center gap-3 mb-2">
+                                <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
+                                    <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
+                                </button>
+                                <input type="file" id="cover-file-input" accept="image/*" class="hidden">
+                                <span id="cover-upload-status" class="text-sm font-bold"></span>
+                            </div>
+                            <input type="text" id="story-image" placeholder="Link ảnh sẽ tự động hiện ở đây..." class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Thể loại (cách nhau dấu phẩy)</label>
+                            <input type="text" id="story-tags" placeholder="VD: hoc-duong, tinh-cam" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Mô tả ngắn</label>
+                            <textarea id="story-desc" rows="3" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-4 transition-all">
+                            XUẤT BẢN TRUYỆN
+                        </button>
+                        <div id="add-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col h-full">
+                    <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                        <i class="ph-fill ph-book-open-text text-sakura-dark"></i> Viết Chương Mới
+                    </h3>
+                    
+                    <form id="add-chapter-form" class="space-y-5 relative z-10 flex-grow flex flex-col">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Chọn bộ truyện</label>
+                                <select id="chapter-story-id" required class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
+                                    <option value="">-- Đang tải danh sách truyện... --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Tiêu đề chương</label>
+                                <input type="text" id="chapter-title" required placeholder="VD: Chương 1: Lần đầu gặp gỡ" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
+                            </div>
+                        </div>
+                        
+                        <div class="flex-grow flex flex-col">
+                            <label class="block text-sm font-bold text-text-muted mb-2">Nội dung chương (Hỗ trợ HTML)</label>
+                            <textarea id="chapter-content" rows="12" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed flex-grow resize-y" placeholder="<p>Bầu trời tháng Chín trong vắt...</p>"></textarea>
+                        </div>
+
+                        <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4">
+                            <label class="block text-sm font-bold text-text-muted mb-2">Link ảnh (Dành cho truyện tranh)</label>
+                            <div class="flex items-center gap-3 mb-3">
+                                <label for="file-input" id="btn-upload-img" class="cursor-pointer bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
+                                    <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
+                                </label>
+                                <input type="file" id="file-input" multiple accept="image/*" class="hidden">
+                                <span id="upload-status" class="text-sm font-bold"></span>
+                            </div>
+                            <textarea id="chapter-images" rows="3" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed text-sm" placeholder="Các link ảnh sẽ tự động xuất hiện ở đây..."></textarea>
+                        </div>
+                        
+                        <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4">
+                            <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-text-main">
+                                <input type="checkbox" id="chapter-has-poll" class="w-5 h-5 accent-sakura-dark rounded border-sakura-mid" onchange="document.getElementById('poll-fields').classList.toggle('hidden')">
+                                Bật bình chọn cho chương này?
+                            </label>
+                            <div id="poll-fields" class="hidden space-y-3 mt-3 border-t border-sakura-mid/30 pt-3">
+                                <input type="text" id="poll-question" placeholder="Câu hỏi (VD: Bạn thấy tình tiết chương này thế nào?)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark outline-none text-sm font-medium">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <input type="text" id="poll-opt-1" placeholder="Lựa chọn 1 (VD: Rất cuốn hút)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                                    <input type="text" id="poll-opt-2" placeholder="Lựa chọn 2 (VD: Bình thường)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                                    <input type="text" id="poll-opt-3" placeholder="Lựa chọn 3 (VD: Khá nhàm chán)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all">
+                            XUẤT BẢN CHƯƠNG TRUYỆN
+                        </button>
+                        <div id="chapter-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden">
+                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-pencil-simple text-sakura-dark"></i> Chỉnh Sửa Truyện & Chương
+                </h3>
+                <form id="edit-form" class="space-y-5 relative z-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 bg-sakura-light/60 rounded-xl border border-sakura-mid/40">
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Chọn truyện cần sửa</label>
+                            <select id="edit-story-id" onchange="loadStoryDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
+                                <option value="">-- Chọn bộ truyện --</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Tiêu đề chương</label>
-                            <input type="text" id="chapter-title" required placeholder="VD: Chương 1: Lần đầu gặp gỡ" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium">
+                            <label class="block text-sm font-bold text-text-muted mb-1">Chọn chương cần sửa (Bỏ trống nếu sửa truyện)</label>
+                            <select id="edit-chapter-id" onchange="loadChapterDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
+                                <option value="">-- Chọn truyện trước --</option>
+                            </select>
                         </div>
-                    </div>
-                    
-                    <div class="flex-grow flex flex-col">
-                        <label class="block text-sm font-bold text-text-muted mb-2">Nội dung chương (Hỗ trợ thẻ HTML như &lt;p&gt;, &lt;br&gt;)</label>
-                        <!-- Ô textarea được mở rộng rất nhiều dòng -->
-                        <textarea id="chapter-content" rows="20" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed flex-grow resize-y" placeholder="<p>Bầu trời tháng Chín trong vắt...</p>"></textarea>
                     </div>
 
-                    <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4">
-                        <label class="block text-sm font-bold text-text-muted mb-2">Link ảnh (Dành cho truyện tranh)</label>
-                        
-                        <div class="flex items-center gap-3 mb-3">
-                            <label for="file-input" id="btn-upload-img" class="cursor-pointer bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
-                                <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
-                            </label>
-                            
-                            <input type="file" id="file-input" multiple accept="image/*" class="hidden">
-                            <span id="upload-status" class="text-sm font-bold"></span>
-                        
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện / Tiêu đề chương</label>
+                            <input type="text" id="edit-title" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
                         </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Trạng thái (Truyện)</label>
+                            <select id="edit-status" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+                                <option value="Đang ra">Đang ra</option>
+                                <option value="Hoàn thành">Hoàn thành</option>
+                                <option value="Tạm ngưng">Tạm ngưng</option>
+                            </select>
+                        </div>
+                    </div>
 
-                        <textarea id="chapter-images" rows="4" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none leading-relaxed text-sm" placeholder="Các link ảnh sẽ tự động xuất hiện ở đây sau khi tải lên..."></textarea>
-                    </div>
-                    <!-- KHOẢNG BÌNH CHỌN CHO CHƯƠNG -->
-                    <div class="bg-sakura-light/50 p-4 rounded-xl border border-sakura-mid/30 mt-4 mb-4">
-                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-text-main mb-2">
-                            <input type="checkbox" id="chapter-has-poll" class="w-5 h-5 accent-sakura-dark rounded border-sakura-mid" onchange="document.getElementById('poll-fields').classList.toggle('hidden')">
-                            Bật bình chọn cho chương này?
-                        </label>
-                        <div id="poll-fields" class="hidden space-y-3 mt-3 border-t border-sakura-mid/30 pt-3">
-                            <input type="text" id="poll-question" placeholder="Câu hỏi (VD: Bạn thấy tình tiết chương này thế nào?)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark outline-none text-sm font-medium">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <input type="text" id="poll-opt-1" placeholder="Lựa chọn 1 (VD: Rất cuốn hút)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
-                                <input type="text" id="poll-opt-2" placeholder="Lựa chọn 2 (VD: Bình thường)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
-                                <input type="text" id="poll-opt-3" placeholder="Lựa chọn 3 (VD: Khá nhàm chán)" class="w-full px-4 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm">
-                            </div>
-                            <p class="text-[10px] text-text-muted italic">* Bỏ trống các ô lựa chọn nếu không muốn dùng đủ 3 cái.</p>
+                    <div class="grid grid-cols-1 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tác giả (Chỉ dành cho truyện)</label>
+                            <input type="text" id="edit-author" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+                        </div>
+                        <div class="flex-grow flex flex-col">
+                            <label class="block text-sm font-bold text-text-muted mb-2">Giới thiệu (nếu sửa truyện) / Nội dung (nếu sửa chương)</label>
+                            <textarea id="edit-content" rows="8" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none leading-relaxed flex-grow resize-y"></textarea>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all">
-                        XUẤT BẢN CHƯƠNG TRUYỆN
+
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl neon-btn mt-4 text-lg tracking-wide transition-all shadow-sm flex justify-center items-center gap-2">
+                        <i class="ph-bold ph-floppy-disk text-xl"></i> LƯU THAY ĐỔI
                     </button>
-                    <div id="chapter-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                    <div id="edit-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
                 </form>
             </div>
-        </div>
 
-        <div class="bg-rose-50/80 p-6 md:p-8 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden mt-8">
-            <!-- Bảng Thống Kê Bình Chọn -->
-            <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden mt-8">
+            <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden">
                 <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
                     <i class="ph-fill ph-chart-pie-slice text-sakura-dark"></i> Thống Kê Bình Chọn
                 </h3>
@@ -321,42 +307,42 @@
                     <p class="text-text-muted text-sm italic">Vui lòng chọn truyện để hiển thị kết quả.</p>
                 </div>
             </div>
-            <h3 class="text-2xl font-bold text-rose-600 mb-6 flex items-center gap-2 font-handwriting">
-                <i class="ph-fill ph-trash text-rose-500"></i> Quản Lý & Xóa Dữ Liệu
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-                <!-- Xóa Truyện -->
-                <div class="p-6 bg-white/70 border border-rose-100 rounded-xl flex flex-col justify-between shadow-sm">
-                    <div>
-                        <label class="block text-sm font-bold text-text-main mb-2">Xóa toàn bộ 1 bộ truyện</label>
-                        <select id="delete-story-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium"></select>
-                    </div>
-                    <button onclick="deleteStory()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
-                        <i class="ph-bold ph-trash text-lg"></i> XÓA TRUYỆN NÀY
-                    </button>
-                </div>
 
-                <!-- Xóa Chương -->
-                <div class="p-6 bg-white/70 border border-rose-100 rounded-xl flex flex-col justify-between shadow-sm">
-                    <div>
-                        <label class="block text-sm font-bold text-text-main mb-2">Xóa 1 chương của truyện</label>
-                        <select id="select-story-for-chapter" onchange="loadChaptersForDelete()" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none mb-4 truncate font-medium">
-                            <option value="">-- Chọn truyện trước --</option>
-                        </select>
-                        <select id="delete-chapter-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium">
-                            <option value="">-- Chờ chọn truyện --</option>
-                        </select>
+            <div class="bg-rose-50/90 p-6 md:p-8 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden">
+                <h3 class="text-2xl font-bold text-rose-600 mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-trash text-rose-500"></i> Quản Lý & Xóa Dữ Liệu
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                    <div class="p-6 bg-white/80 border border-rose-200 rounded-xl flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                        <div>
+                            <label class="block text-sm font-bold text-text-main mb-2">Xóa toàn bộ 1 bộ truyện</label>
+                            <select id="delete-story-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium"></select>
+                        </div>
+                        <button onclick="deleteStory()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-trash text-lg"></i> XÓA TRUYỆN NÀY
+                        </button>
                     </div>
-                    <button onclick="deleteChapter()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
-                        <i class="ph-bold ph-trash text-lg"></i> XÓA CHƯƠNG NÀY
-                    </button>
+
+                    <div class="p-6 bg-white/80 border border-rose-200 rounded-xl flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                        <div>
+                            <label class="block text-sm font-bold text-text-main mb-2">Xóa 1 chương của truyện</label>
+                            <select id="select-story-for-chapter" onchange="loadChaptersForDelete()" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none mb-4 truncate font-medium">
+                                <option value="">-- Chọn truyện trước --</option>
+                            </select>
+                            <select id="delete-chapter-id" class="w-full px-4 py-3 rounded-xl bg-white border border-rose-200 text-text-main focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none truncate font-medium">
+                                <option value="">-- Chờ chọn truyện --</option>
+                            </select>
+                        </div>
+                        <button onclick="deleteChapter()" class="w-full mt-6 bg-rose-500 hover:bg-rose-600 text-white px-4 py-3.5 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-trash text-lg"></i> XÓA CHƯƠNG NÀY
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div>
-
+        </div> </div>
+    
     <script>
         // Xử lý sự kiện khi bấm nút ĐĂNG TRUYỆN
         const addStoryForm = document.getElementById('add-story-form');
