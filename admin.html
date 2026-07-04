@@ -877,8 +877,8 @@ function loadChapterDataForEdit() {
 
 // Xử lý gửi dữ liệu cập nhật lên Server
 
-if(editForm) {
-    editForm.addEventListener('submit', async (e) => {
+if (formChinhSua) {
+    formChinhSua.addEventListener('submit', async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('mytales_token');
         if (!token) return alert('Phiên đăng nhập hết hạn!');
@@ -918,20 +918,20 @@ if(editForm) {
             const data = await response.json();
 
             if (response.ok) {
-                editMsg.innerText = "🎉 Cập nhật thành công!";
-                editMsg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
-                editMsg.classList.remove('hidden');
+                thongBaoSua.innerText = "🎉 Cập nhật thành công!";
+                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+                thongBaoSua.classList.remove('hidden');
                 loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
-                setTimeout(() => { editMsg.classList.add('hidden'); }, 3000);
+                setTimeout(() => { thongBaoSua.classList.add('hidden'); }, 3000);
             } else {
-                editMsg.innerText = "❌ " + (data.message || "Lỗi cập nhật");
-                editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
-                editMsg.classList.remove('hidden');
+                thongBaoSua.innerText = "❌ " + (data.message || "Lỗi cập nhật");
+                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+                thongBaoSua.classList.remove('hidden');
             }
         } catch (error) {
-            editMsg.innerText = "❌ Lỗi kết nối đến máy chủ!";
-            editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
-            editMsg.classList.remove('hidden');
+            thongBaoSua.innerText = "❌ Lỗi kết nối đến máy chủ!";
+            thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            thongBaoSua.classList.remove('hidden');
         }
     });
 }
