@@ -184,7 +184,63 @@
                     <div id="add-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
                 </form>
             </div>
+            <!-- Cột/Khu vực Chỉnh sửa Truyện & Chương -->
+<div class="lg:col-span-3 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col mt-8">
+    <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+        <i class="ph-fill ph-pencil-simple text-sakura-dark"></i> Chỉnh Sửa Truyện & Chương
+    </h3>
+    
+    <form id="edit-form" class="space-y-5 relative z-10">
+        <!-- Phần Chọn Truyện & Chương để sửa -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-4 bg-sakura-light/50 rounded-xl border border-sakura-mid/30">
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-1">Chọn truyện cần sửa</label>
+                <select id="edit-story-id" onchange="loadStoryDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
+                    <option value="">-- Chọn bộ truyện --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-1">Chọn chương cần sửa (Bỏ trống nếu chỉ sửa thông tin truyện)</label>
+                <select id="edit-chapter-id" onchange="loadChapterDataForEdit()" class="w-full px-5 py-3 rounded-xl bg-white border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none font-medium truncate">
+                    <option value="">-- Chọn truyện trước --</option>
+                </select>
+            </div>
+        </div>
 
+        <hr class="border-sakura-mid/30">
+
+        <!-- Các trường thông tin (Sẽ tự động điền khi chọn) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-1">Tên truyện / Tiêu đề chương</label>
+                <input type="text" id="edit-title" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-text-muted mb-1">Tác giả (Chỉ dành cho truyện)</label>
+                <input type="text" id="edit-author" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-text-muted mb-1">Trạng thái truyện</label>
+            <select id="edit-status" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+                <option value="Đang ra">Đang ra</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+                <option value="Tạm ngưng">Tạm ngưng</option>
+            </select>
+        </div>
+
+        <div class="flex-grow flex flex-col">
+            <label class="block text-sm font-bold text-text-muted mb-2">Giới thiệu (nếu sửa truyện) / Nội dung (nếu sửa chương)</label>
+            <textarea id="edit-content" rows="10" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none leading-relaxed flex-grow resize-y"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-xl neon-btn mt-6 text-lg tracking-wide transition-all shadow-sm flex justify-center items-center gap-2">
+            <i class="ph-bold ph-floppy-disk text-xl"></i> LƯU THAY ĐỔI
+        </button>
+        <div id="edit-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+    </form>
+</div>    
             <div class="lg:col-span-2 bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden flex flex-col">
                 <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
                     <i class="ph-fill ph-book-open-text text-sakura-dark"></i> Viết Chương Mới
@@ -769,6 +825,135 @@
                 }
             }, 1000);
         });
+        // Bổ sung dropdown cho phần Chỉnh sửa (gọi chung trong hàm loadStoriesForDropdown cũ)
+const originalLoadStories = loadStoriesForDropdown;
+loadStoriesForDropdown = async function() {
+    await originalLoadStories(); // Chạy hàm cũ
+    const selectEditStory = document.getElementById('edit-story-id');
+    if (selectEditStory) {
+        selectEditStory.innerHTML = '<option value="">-- Chọn bộ truyện --</option>';
+        globalStories.forEach(story => {
+            selectEditStory.innerHTML += `<option value="${story._id}">${story.title}</option>`;
+        });
+    }
+};
+
+// Hàm tải dữ liệu Truyện lên Form
+function loadStoryDataForEdit() {
+    const storyId = document.getElementById('edit-story-id').value;
+    const selectChap = document.getElementById('edit-chapter-id');
+    const titleInput = document.getElementById('edit-title');
+    const authorInput = document.getElementById('edit-author');
+    const contentInput = document.getElementById('edit-content');
+    const statusSelect = document.getElementById('edit-status');
+
+    // Reset chương
+    selectChap.innerHTML = '<option value="">-- Chọn chương cần sửa (Bỏ trống nếu sửa truyện) --</option>';
+    
+    if(!storyId) {
+        titleInput.value = ''; authorInput.value = ''; contentInput.value = '';
+        return;
+    }
+
+    const story = globalStories.find(s => s._id === storyId);
+    if(story) {
+        titleInput.value = story.title || '';
+        authorInput.value = story.author || '';
+        contentInput.value = story.desc || '';
+        if (story.status) statusSelect.value = story.status;
+
+        // Tải danh sách chương vào dropdown
+        if(story.chaptersData) {
+            story.chaptersData.forEach(chap => {
+                selectChap.innerHTML += `<option value="${chap._id}">${chap.title}</option>`;
+            });
+        }
+    }
+}
+
+// Hàm tải dữ liệu Chương lên Form
+function loadChapterDataForEdit() {
+    const storyId = document.getElementById('edit-story-id').value;
+    const chapterId = document.getElementById('edit-chapter-id').value;
+    const titleInput = document.getElementById('edit-title');
+    const authorInput = document.getElementById('edit-author');
+    const contentInput = document.getElementById('edit-content');
+
+    if(!chapterId) {
+        // Nếu bỏ chọn chương, quay lại hiển thị data của truyện
+        loadStoryDataForEdit();
+        return;
+    }
+
+    const story = globalStories.find(s => s._id === storyId);
+    if(story && story.chaptersData) {
+        const chapter = story.chaptersData.find(c => c._id === chapterId);
+        if (chapter) {
+            titleInput.value = chapter.title || '';
+            authorInput.value = 'Không áp dụng cho chương';
+            authorInput.disabled = true; 
+            contentInput.value = chapter.content || '';
+        }
+    }
+}
+
+// Xử lý gửi dữ liệu cập nhật
+const editForm = document.getElementById('edit-form');
+const editMsg = document.getElementById('edit-msg');
+
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('mytales_token');
+    if (!token) return alert('Phiên đăng nhập hết hạn!');
+
+    const storyId = document.getElementById('edit-story-id').value;
+    const chapterId = document.getElementById('edit-chapter-id').value;
+    
+    if (!storyId) return alert('Vui lòng chọn truyện cần sửa!');
+
+    const isEditingChapter = chapterId !== "";
+    const endpoint = isEditingChapter 
+        ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
+        : `https://my-tale.onrender.com/api/stories/${storyId}`;
+
+    const payload = isEditingChapter 
+        ? {
+            title: document.getElementById('edit-title').value,
+            content: document.getElementById('edit-content').value
+        } 
+        : {
+            title: document.getElementById('edit-title').value,
+            author: document.getElementById('edit-author').value,
+            desc: document.getElementById('edit-content').value,
+            status: document.getElementById('edit-status').value
+        };
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'PUT', // Hoặc 'PATCH' tùy thuộc vào Backend của bạn
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            editMsg.innerText = "🎉 Cập nhật thành công!";
+            editMsg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+            loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
+            setTimeout(() => { editMsg.classList.add('hidden'); }, 3000);
+        } else {
+            editMsg.innerText = "❌ " + (data.message || "Lỗi cập nhật");
+            editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+        }
+    } catch (error) {
+        editMsg.innerText = "❌ Lỗi kết nối đến máy chủ!";
+        editMsg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+    }
+});
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
