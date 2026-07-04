@@ -816,125 +816,7 @@
             }, 1000);
         });
         // Bổ sung dropdown cho phần Chỉnh sửa (gọi chung trong hàm loadStoriesForDropdown cũ)
-// Hàm tải dữ liệu Truyện lên Form Chỉnh Sửa
-function loadStoryDataForEdit() {
-    const storyId = document.getElementById('edit-story-id').value;
-    const selectChap = document.getElementById('edit-chapter-id');
-    const titleInput = document.getElementById('edit-title');
-    const authorInput = document.getElementById('edit-author');
-    const contentInput = document.getElementById('edit-content');
-    const statusSelect = document.getElementById('edit-status');
-
-    // Reset chương
-    selectChap.innerHTML = '<option value="">-- Chọn chương cần sửa (Bỏ trống nếu sửa truyện) --</option>';
-    
-    if(!storyId) {
-        titleInput.value = ''; authorInput.value = ''; contentInput.value = '';
-        return;
-    }
-
-    const story = globalStories.find(s => s._id === storyId);
-    if(story) {
-        titleInput.value = story.title || '';
-        authorInput.value = story.author || '';
-        contentInput.value = story.desc || '';
-        if (story.status) statusSelect.value = story.status;
-
-        // Tải danh sách chương vào dropdown
-        if(story.chaptersData) {
-            story.chaptersData.forEach(chap => {
-                selectChap.innerHTML += `<option value="${chap._id}">${chap.title}</option>`;
-            });
-        }
-    }
-}
-
-// Hàm tải dữ liệu Chương lên Form Chỉnh Sửa
-function loadChapterDataForEdit() {
-    const storyId = document.getElementById('edit-story-id').value;
-    const chapterId = document.getElementById('edit-chapter-id').value;
-    const titleInput = document.getElementById('edit-title');
-    const authorInput = document.getElementById('edit-author');
-    const contentInput = document.getElementById('edit-content');
-
-    if(!chapterId) {
-        // Nếu bỏ chọn chương, quay lại hiển thị data của truyện
-        loadStoryDataForEdit();
-        return;
-    }
-
-    const story = globalStories.find(s => s._id === storyId);
-    if(story && story.chaptersData) {
-        const chapter = story.chaptersData.find(c => c._id === chapterId);
-        if (chapter) {
-            titleInput.value = chapter.title || '';
-            authorInput.value = 'Không áp dụng cho chương';
-            authorInput.disabled = true; 
-            contentInput.value = chapter.content || '';
-        }
-    }
-}
-
-// Xử lý gửi dữ liệu cập nhật lên Server
-
-if (formChinhSua) {
-    formChinhSua.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('mytales_token');
-        if (!token) return alert('Phiên đăng nhập hết hạn!');
-
-        const storyId = document.getElementById('edit-story-id').value;
-        const chapterId = document.getElementById('edit-chapter-id').value;
-        
-        if (!storyId) return alert('Vui lòng chọn truyện cần sửa!');
-
-        const isEditingChapter = chapterId !== "";
-        const endpoint = isEditingChapter 
-            ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
-            : `https://my-tale.onrender.com/api/stories/${storyId}`;
-
-        const payload = isEditingChapter 
-            ? {
-                title: document.getElementById('edit-title').value,
-                content: document.getElementById('edit-content').value
-            } 
-            : {
-                title: document.getElementById('edit-title').value,
-                author: document.getElementById('edit-author').value,
-                desc: document.getElementById('edit-content').value,
-                status: document.getElementById('edit-status').value
-            };
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                thongBaoSua.innerText = "🎉 Cập nhật thành công!";
-                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
-                thongBaoSua.classList.remove('hidden');
-                loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
-                setTimeout(() => { thongBaoSua.classList.add('hidden'); }, 3000);
-            } else {
-                thongBaoSua.innerText = "❌ " + (data.message || "Lỗi cập nhật");
-                thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
-                thongBaoSua.classList.remove('hidden');
-            }
-        } catch (error) {
-            thongBaoSua.innerText = "❌ Lỗi kết nối đến máy chủ!";
-            thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
-            thongBaoSua.classList.remove('hidden');
-        }
-    });
-}
+// ================= KHU VỰC XỬ LÝ CHỈNH SỬA TRUYỆN =================
 
 // Hàm tải dữ liệu Truyện lên Form
 function loadStoryDataForEdit() {
@@ -978,7 +860,6 @@ function loadChapterDataForEdit() {
     const contentInput = document.getElementById('edit-content');
 
     if(!chapterId) {
-        // Nếu bỏ chọn chương, quay lại hiển thị data của truyện
         loadStoryDataForEdit();
         return;
     }
@@ -995,11 +876,66 @@ function loadChapterDataForEdit() {
     }
 }
 
-// Xử lý gửi dữ liệu cập nhật
-// Xử lý gửi dữ liệu cập nhật lên Server (Đã fix lỗi ReferenceError)
-const formChinhSua = document.getElementById('edit-form');
-const thongBaoSua = document.getElementById('edit-msg');
+// Hàm Lưu Chỉnh Sửa (Kích hoạt bằng onclick)
+async function luuChinhSuaThongTin() {
+    const token = localStorage.getItem('mytales_token');
+    if (!token) return alert('Phiên đăng nhập hết hạn!');
 
+    const storyId = document.getElementById('edit-story-id').value;
+    const chapterId = document.getElementById('edit-chapter-id').value;
+    const thongBaoSua = document.getElementById('edit-msg');
+    
+    if (!storyId) return alert('Vui lòng chọn truyện cần sửa!');
+
+    const isEditingChapter = chapterId !== "";
+    
+    const endpoint = isEditingChapter 
+        ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
+        : `https://my-tale.onrender.com/api/stories/${storyId}`;
+
+    const payload = isEditingChapter 
+        ? {
+            title: document.getElementById('edit-title').value,
+            content: document.getElementById('edit-content').value
+        } 
+        : {
+            title: document.getElementById('edit-title').value,
+            author: document.getElementById('edit-author').value,
+            desc: document.getElementById('edit-content').value,
+            status: document.getElementById('edit-status').value
+        };
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            thongBaoSua.innerText = "🎉 Cập nhật thành công!";
+            thongBaoSua.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+            thongBaoSua.classList.remove('hidden');
+            loadStoriesForDropdown(); // Tải lại dữ liệu mới nhất
+            setTimeout(() => { thongBaoSua.classList.add('hidden'); }, 3000);
+        } else {
+            thongBaoSua.innerText = "❌ " + (data.message || "Lỗi cập nhật");
+            thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+            thongBaoSua.classList.remove('hidden');
+        }
+    } catch (error) {
+        thongBaoSua.innerText = "❌ Lỗi kết nối đến máy chủ!";
+        thongBaoSua.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+        thongBaoSua.classList.remove('hidden');
+    }
+}
+    
+    
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
         
