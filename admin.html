@@ -1031,15 +1031,16 @@ function closeCropperModal() {
     }
 }
 
-// Bấm nút Xác Nhận Cắt -> Biến ảnh thành file -> Tải thẳng lên Render/Cloudinary
-document.getElementById('btn-crop-confirm').addEventListener('click', () => {
+// Hàm Xác Nhận Cắt -> Biến ảnh thành file -> Tải thẳng lên Render/Cloudinary
+async function confirmCropAndUpload() {
     if (!cropper) return;
     
     const btnConfirm = document.getElementById('btn-crop-confirm');
+    const originalText = btnConfirm.innerHTML; // Lưu lại giao diện gốc của nút
     btnConfirm.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải lên...';
     btnConfirm.disabled = true;
 
-    // Xác định đang lưu link vào ô nào
+    // Xác định đang lưu link vào ô nào (Avatar hay Background)
     const urlInputId = currentCropTarget === 'avatar' ? 'author-avatar-url' : 'author-bg-url';
     const statusId = currentCropTarget === 'avatar' ? 'author-avatar-status' : 'author-bg-status';
     const statusSpan = document.getElementById(statusId);
@@ -1060,7 +1061,7 @@ document.getElementById('btn-crop-confirm').addEventListener('click', () => {
         }
 
         const formData = new FormData();
-        formData.append('images', blob, 'cropped_author_img.jpg'); // Đóng gói cục blob thành file giả lập
+        formData.append('images', blob, 'cropped_author_img.jpg'); // Đóng gói mảnh cắt thành file giả lập
 
         try {
             const response = await fetch('https://my-tale.onrender.com/api/upload', {
@@ -1069,6 +1070,7 @@ document.getElementById('btn-crop-confirm').addEventListener('click', () => {
                 body: formData
             });
             const data = await response.json();
+            
             if (response.ok) {
                 document.getElementById(urlInputId).value = data.urls[0];
                 statusSpan.textContent = "✅ Đã tải ảnh lên máy chủ!"; 
@@ -1081,13 +1083,17 @@ document.getElementById('btn-crop-confirm').addEventListener('click', () => {
             statusSpan.textContent = "❌ Lỗi kết nối mạng!"; 
             statusSpan.className = 'text-rose-600 text-sm font-bold ml-2'; 
         } finally {
-            btnConfirm.innerHTML = '<i class="ph-bold ph-check-circle"></i> Xác nhận Cắt & Tải lên';
+            // Trả lại trạng thái ban đầu cho nút bấm và đóng bảng
+            btnConfirm.innerHTML = originalText;
             btnConfirm.disabled = false;
             closeCropperModal();
         }
-    }, 'image/jpeg', 0.85); // Nén ảnh thành jpg với chất lượng 85% để web load siêu nhanh
-});
+    }, 'image/jpeg', 0.85); // Nén ảnh thành đuôi JPG, chất lượng 85% để web load nhanh
+}
+
 // Lưu thông tin về Server
+
+
 async function luuThongTinTacGia() {
     const token = localStorage.getItem('mytales_token');
     if (!token) return alert('Phiên đăng nhập hết hạn!');
@@ -1149,7 +1155,7 @@ async function luuThongTinTacGia() {
             </div>
             <div class="flex justify-end gap-4 mt-6">
                 <button type="button" onclick="closeCropperModal()" class="px-6 py-3 rounded-xl font-bold text-text-muted hover:bg-sakura-light transition-colors border border-sakura-mid/30">Hủy bỏ</button>
-                <button type="button" id="btn-crop-confirm" class="px-6 py-3 rounded-xl bg-sakura-dark text-white font-bold hover:bg-[#d48895] transition-colors shadow-sm flex items-center gap-2">
+                <button type="button" id="btn-crop-confirm" onclick="confirmCropAndUpload()" class="px-6 py-3 rounded-xl bg-sakura-dark text-white font-bold hover:bg-[#d48895] transition-colors shadow-sm flex items-center gap-2">
                     <i class="ph-bold ph-check-circle"></i> Xác nhận Cắt & Tải lên
                 </button>
             </div>
