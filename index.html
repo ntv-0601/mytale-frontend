@@ -406,41 +406,38 @@
 
       <!-- STREAMING_CHUNK:Giao diện Khu Tác Giả... -->
       <!-- VIEW: TÁC GIẢ -->
-      <!-- VIEW: TÁC GIẢ -->
       <div id="view-author" class="view-section max-w-4xl mx-auto">
           <div class="glass-panel rounded-3xl overflow-hidden shadow-lg border border-white dark:border-night-border mt-4">
-              <div class="h-48 md:h-64 bg-gradient-to-r from-sakura-mid to-sakura-dark dark:from-slate-800 dark:to-blue-900 relative">
+              <!-- Gắn ID cho ảnh Bìa nền -->
+              <div id="author-display-bg" class="h-48 md:h-64 bg-gradient-to-r from-sakura-mid to-sakura-dark dark:from-slate-800 dark:to-blue-900 relative bg-cover bg-center">
                   <div class="absolute -bottom-16 left-8 md:left-1/2 md:-translate-x-1/2">
                       <div class="w-32 h-32 rounded-full border-4 border-white dark:border-night-surface overflow-hidden bg-white shadow-md">
-                          <img src="AVT/IRO.jpg" onerror="this.src='https://placehold.co/400x400/e598a3/ffffff?text=Vinh+Ng'" alt="Avatar" class="w-full h-full object-cover">
+                          <!-- Gắn ID cho Avatar -->
+                          <img id="author-display-avatar" src="AVT/IRO.jpg" onerror="this.src='https://placehold.co/400x400/e598a3/ffffff'" class="w-full h-full object-cover">
                       </div>
                   </div>
               </div>
               
               <div class="pt-20 pb-10 px-8 md:text-center">
-                  <h2 class="text-4xl font-handwriting font-bold text-sakura-dark dark:text-night-accent mb-2">Vinh Ng</h2>
+                  <!-- Gắn ID cho Tên Tác Giả -->
+                  <h2 id="author-display-name" class="text-4xl font-handwriting font-bold text-sakura-dark dark:text-night-accent mb-2">Đang tải...</h2>
                   <p class="text-text-muted dark:text-night-text-muted font-medium mb-6"><i class="ph-fill ph-pen-nib mr-1"></i>Người dệt mộng thanh xuân</p>
                   
                   <div class="flex flex-wrap gap-4 justify-start md:justify-center mb-10">
                       <div class="bg-sakura-light dark:bg-slate-800 border border-sakura-mid/30 dark:border-slate-700 px-6 py-3 rounded-2xl text-center shadow-sm">
-                          <span class="block font-bold text-xl text-text-main dark:text-white">2</span>
+                          <span id="author-story-count" class="block font-bold text-xl text-text-main dark:text-white">...</span>
                           <span class="text-xs uppercase tracking-wider text-text-muted dark:text-night-text-muted mt-1">Tác phẩm</span>
                       </div>
                   </div>
 
-                  <div class="text-left md:text-center space-y-4 leading-relaxed max-w-2xl mx-auto text-text-main dark:text-night-text text-lg">
-                      <p>Xin chào, mình là chủ nhân của <strong class="text-sakura-dark dark:text-night-accent font-handwriting text-2xl">My Tale</strong>. Nơi đây là góc nhỏ mình lưu giữ những kỷ niệm, những câu chuyện tình cảm học đường mộng mơ mà mình sáng tác.</p>
-                      <p>Dù ngoài kia có giông bão hay nắng gắt, mình hi vọng khi bước vào My Tale, bạn sẽ tìm thấy sự bình yên, tiếng cười và một chút ngọt ngào của tuổi trẻ.</p>
-                      <p>Cảm ơn bạn đã ghé thăm. Hãy pha một tách trà, nghe một bản nhạc nhẹ và bắt đầu đọc truyện nhé!</p>
+                  <!-- Gắn ID cho Đoạn giới thiệu -->
+                  <div id="author-display-intro" class="text-left md:text-center space-y-4 leading-relaxed max-w-2xl mx-auto text-text-main dark:text-night-text text-lg">
+                      Đang tải lời giới thiệu...
                   </div>
+                  
                   <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-10 mt-10">
-                      <a href="https://www.facebook.com/nguyen.vinh.179007/" target="_blank" title="Trang cá nhân Facebook" class="flex items-center text-text-muted hover:text-blue-600 dark:text-night-text-muted dark:hover:text-blue-400 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
+                      <a href="https://www.facebook.com/nguyen.vinh.179007/" target="_blank" class="flex items-center text-text-muted hover:text-blue-600 dark:text-night-text-muted dark:hover:text-blue-400 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                           <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
-                      </a>
-                      
-                      <a href="mailto:mytaleone@gmail.com" class="flex items-center gap-2 text-text-muted hover:text-rose-500 dark:text-night-text-muted dark:hover:text-rose-400 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 group">
-                          <svg class="w-9 h-9 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                          <span class="font-medium text-[15px] group-hover:underline tracking-wide">mytaleone@gmail.com</span>
                       </a>
                   </div>
               </div>
@@ -1014,13 +1011,31 @@ async function fetchStoriesFromBackend() {
               }
           } catch (e) { console.error("Lỗi tải Nội quy"); }
       }
-
+      async function loadAuthorProfileDisplay() {
+            try {
+                const res = await fetch('https://my-tale.onrender.com/api/author');
+                const data = await res.json();
+                
+                document.getElementById('author-display-name').innerText = data.name || 'Tác Giả';
+                if (data.avatar) document.getElementById('author-display-avatar').src = data.avatar;
+                
+                const bgElement = document.getElementById('author-display-bg');
+                if (data.bg) {
+                    bgElement.style.backgroundImage = `url('${data.bg}')`;
+                } else {
+                    bgElement.style.backgroundImage = ''; // Nếu xóa link sẽ tự về màu Gradient mặc định
+                }
+                
+                document.getElementById('author-display-intro').innerHTML = data.intro || '';
+            } catch (e) { console.error("Lỗi tải thông tin tác giả"); }
+        }
       // 3. Kích hoạt mọi thứ khi web vừa mở lên
       window.addEventListener('DOMContentLoaded', () => {
           fetchStoriesFromBackend(); 
           startEffects();
           loadDynamicMarquee(); 
           loadRulesDisplay(); 
+          loadAuthorProfileDisplay(); // Gọi hàm hiển thị tác giả
           setInterval(syncLikes, 5000);
       });
     </script>

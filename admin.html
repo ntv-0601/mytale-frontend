@@ -341,7 +341,52 @@
                 </div>
             </div>
 
-        </div> </div>
+        </div>
+        <!-- ================= HÀNG MỚI: CHỈNH SỬA KHU TÁC GIẢ ================= -->
+            <div class="bg-white/60 p-6 md:p-8 rounded-2xl border border-sakura-mid/50 shadow-sm relative overflow-hidden">
+                <h3 class="text-2xl font-bold text-sakura-dark mb-6 flex items-center gap-2 font-handwriting">
+                    <i class="ph-fill ph-user-circle-gear text-sakura-dark"></i> Chỉnh Sửa Khu Tác Giả
+                </h3>
+                <form id="edit-author-form" class="space-y-5 relative z-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Tên Tác Giả</label>
+                            <input type="text" id="author-name" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark outline-none text-text-main">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Đại Diện (Avatar)</label>
+                            <div class="flex items-center gap-3 mb-2">
+                                <button type="button" onclick="document.getElementById('author-avatar-input').click()" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm border border-sakura-mid font-bold shadow-sm">
+                                    <i class="ph-bold ph-upload-simple"></i> Tải ảnh lên
+                                </button>
+                                <input type="file" id="author-avatar-input" accept="image/*" class="hidden" onchange="uploadAuthorImage('author-avatar-input', 'author-avatar-url', 'author-avatar-status')">
+                                <span id="author-avatar-status" class="text-sm font-bold"></span>
+                            </div>
+                            <input type="text" id="author-avatar-url" placeholder="Link ảnh avatar sẽ hiện ở đây..." class="w-full px-5 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm text-text-main">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Nền (Background) - Bỏ trống nếu muốn dùng màu mặc định</label>
+                            <div class="flex items-center gap-3 mb-2">
+                                <button type="button" onclick="document.getElementById('author-bg-input').click()" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm border border-sakura-mid font-bold shadow-sm">
+                                    <i class="ph-bold ph-upload-simple"></i> Tải ảnh lên
+                                </button>
+                                <input type="file" id="author-bg-input" accept="image/*" class="hidden" onchange="uploadAuthorImage('author-bg-input', 'author-bg-url', 'author-bg-status')">
+                                <span id="author-bg-status" class="text-sm font-bold"></span>
+                            </div>
+                            <input type="text" id="author-bg-url" placeholder="Link ảnh bìa nền sẽ hiện ở đây..." class="w-full px-5 py-2 rounded-xl bg-white/80 border border-sakura-mid outline-none text-sm text-text-main">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-2">Đoạn giới thiệu bản thân (Hỗ trợ thẻ HTML như &lt;p&gt;, &lt;strong&gt;)</label>
+                        <textarea id="author-intro" rows="6" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark outline-none leading-relaxed resize-y text-text-main"></textarea>
+                    </div>
+                    <button type="button" onclick="luuThongTinTacGia()" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-4 text-lg transition-all flex justify-center items-center gap-2">
+                        <i class="ph-bold ph-floppy-disk text-xl"></i> LƯU THÔNG TIN TÁC GIẢ
+                    </button>
+                    <div id="author-msg" class="hidden text-center mt-3 font-bold text-sm"></div>
+                </form>
+            </div> 
+    </div>
     
     <script>
         // Xử lý sự kiện khi bấm nút ĐĂNG TRUYỆN
@@ -435,6 +480,7 @@
             adminDashboard.classList.remove('hidden');
             document.body.classList.remove('items-center'); // Cho form dịch lên trên
             loadStoriesForDropdown(); 
+            loadThongTinTacGia();
         }
 
         function logout() {
@@ -934,7 +980,76 @@ async function luuChinhSuaThongTin() {
         thongBaoSua.classList.remove('hidden');
     }
 }
-    
+    // Tải dữ liệu Tác giả lên Form khi mở Dashboard
+async function loadThongTinTacGia() {
+    try {
+        const res = await fetch('https://my-tale.onrender.com/api/author');
+        const data = await res.json();
+        document.getElementById('author-name').value = data.name || '';
+        document.getElementById('author-avatar-url').value = data.avatar || '';
+        document.getElementById('author-bg-url').value = data.bg || '';
+        document.getElementById('author-intro').value = data.intro || '';
+    } catch (e) { console.log("Chưa có thông tin tác giả"); }
+}
+
+// Xử lý nút Tải Ảnh Lên (Dùng chung cho cả Avatar và Background)
+async function uploadAuthorImage(inputId, urlId, statusId) {
+    const fileInput = document.getElementById(inputId);
+    const statusSpan = document.getElementById(statusId);
+    const urlInput = document.getElementById(urlId);
+
+    if (fileInput.files.length === 0) return;
+    const token = localStorage.getItem('mytales_token');
+    if (!token) return alert('Vui lòng đăng nhập lại!');
+
+    statusSpan.textContent = "⏳ Đang tải..."; statusSpan.className = 'text-amber-600 text-sm font-bold';
+
+    const formData = new FormData();
+    formData.append('images', fileInput.files[0]);
+
+    try {
+        const response = await fetch('https://my-tale.onrender.com/api/upload', {
+            method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData
+        });
+        const data = await response.json();
+        if (response.ok) {
+            urlInput.value = data.urls[0];
+            statusSpan.textContent = "✅ Thành công!"; statusSpan.className = 'text-green-600 text-sm font-bold';
+        } else {
+            statusSpan.textContent = "❌ Lỗi!"; statusSpan.className = 'text-red-600 text-sm font-bold';
+        }
+    } catch (error) { statusSpan.textContent = "❌ Lỗi mạng!"; statusSpan.className = 'text-red-600 text-sm font-bold'; }
+}
+
+// Lưu thông tin về Server
+async function luuThongTinTacGia() {
+    const token = localStorage.getItem('mytales_token');
+    if (!token) return alert('Phiên đăng nhập hết hạn!');
+    const msg = document.getElementById('author-msg');
+
+    const payload = {
+        name: document.getElementById('author-name').value,
+        avatar: document.getElementById('author-avatar-url').value,
+        bg: document.getElementById('author-bg-url').value,
+        intro: document.getElementById('author-intro').value
+    };
+
+    try {
+        const response = await fetch('https://my-tale.onrender.com/api/author', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+            msg.innerText = "🎉 Lưu thông tin thành công!";
+            msg.className = "text-center mt-3 font-bold text-sm text-green-600 bg-green-100 py-2 rounded-lg block border border-green-200";
+            setTimeout(() => { msg.classList.add('hidden'); }, 3000);
+        } else { throw new Error('Lỗi'); }
+    } catch (error) {
+        msg.innerText = "❌ Không thể lưu, vui lòng thử lại!";
+        msg.className = "text-center mt-3 font-bold text-sm text-rose-600 bg-rose-100 py-2 rounded-lg block border border-rose-200";
+    }
+}
     
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
