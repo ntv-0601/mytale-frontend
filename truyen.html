@@ -250,8 +250,20 @@
         }
 
         function backToDetail() {
+            // 1. Chuyển đổi giao diện về trang Mục lục
             document.getElementById('view-read').classList.add('hidden');
             document.getElementById('view-detail').classList.remove('hidden');
+            
+            // 2. Tự động cập nhật lại trạng thái của nút "Đọc Tiếp" ngay lập tức
+            const btnRead = document.getElementById('btn-read-first');
+            const chapterCount = currentStory.chaptersData ? currentStory.chaptersData.length : 0;
+            const savedIndex = getReadingHistory(storyId);
+            
+            // Nếu có lịch sử đọc thì biến hình nút bấm
+            if (chapterCount > 0 && savedIndex !== undefined && savedIndex < chapterCount) {
+                btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> ĐỌC TIẾP CHƯƠNG ${savedIndex + 1}`;
+                btnRead.onclick = () => startReading(savedIndex);
+            }
         }
 
         function renderChapter() {
