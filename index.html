@@ -224,7 +224,7 @@
       <div id="view-stories" class="view-section active">
         
         <!-- BỐ CỤC LƯỚI: BANNER BÊN TRÁI, NỘI QUY BÊN PHẢI -->
-        <div class="max-w-7xl mx-auto mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div id="hero-and-rules" class="max-w-7xl mx-auto mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             <!-- Hero Banner (Chiếm 2/3 diện tích) -->
             <section id="hero-banner" class="lg:col-span-2 relative glass-panel rounded-3xl p-8 md:p-12 flex flex-col-reverse md:flex-row items-center gap-8 overflow-hidden shadow-[0_8px_30px_rgb(229,152,163,0.15)] dark:shadow-none border border-white dark:border-night-border h-full">
@@ -775,6 +775,7 @@ async function fetchStoriesFromBackend() {
           }
       }
       // --- STREAMING_CHUNK:Cập nhật Logic Điều hướng (Router)... ---
+      // --- Cập nhật Logic Điều hướng (Router) ---
       function navigate(view) {
           // Lưu vết nếu rời khỏi màn hình chính để sau này Back lại
           if (['home', 'truyen-chu', 'truyen-tranh'].includes(view)) {
@@ -789,6 +790,9 @@ async function fetchStoriesFromBackend() {
           document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
           mobileMenu.classList.add('hidden');
 
+          // Lấy nguyên cái khối chứa cả Banner và Nội Quy
+          const topBlock = document.getElementById('hero-and-rules');
+
           if (view === 'tac-gia') {
               document.getElementById('view-author').classList.add('active');
           } else if (view === 'read-story') {
@@ -797,17 +801,20 @@ async function fetchStoriesFromBackend() {
               document.getElementById('view-stories').classList.add('active');
               
               if (view === 'home') {
-                  heroBanner.classList.remove('hidden');
+                  // Hiện toàn bộ Banner + Nội quy
+                  if(topBlock) topBlock.classList.remove('hidden');
                   sectionHeader.classList.add('hidden');
                   currentFilterCategory = 'all';
               } else if (view === 'truyen-chu') {
-                  heroBanner.classList.add('hidden');
+                  // Ẩn toàn bộ Banner + Nội quy
+                  if(topBlock) topBlock.classList.add('hidden');
                   sectionHeader.classList.remove('hidden');
                   sectionTitle.innerText = "Truyện Chữ";
                   sectionDesc.innerText = "Những dòng văn êm ái xoa dịu tâm hồn.";
                   currentFilterCategory = 'truyen-chu';
               } else if (view === 'truyen-tranh') {
-                  heroBanner.classList.add('hidden');
+                  // Ẩn toàn bộ Banner + Nội quy
+                  if(topBlock) topBlock.classList.add('hidden');
                   sectionHeader.classList.remove('hidden');
                   sectionTitle.innerText = "Truyện Tranh";
                   sectionDesc.innerText = "Thế giới rực rỡ qua từng nét vẽ.";
@@ -819,7 +826,6 @@ async function fetchStoriesFromBackend() {
               applyFilters();
           }
       }
-
       // --- STREAMING_CHUNK:Bộ lọc và Hiệu ứng... ---
       function applyFilters() {
           const query = searchInput.value.toLowerCase();
