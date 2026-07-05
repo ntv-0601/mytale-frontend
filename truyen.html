@@ -155,7 +155,18 @@
         const storyId = urlParams.get('id');
         let currentStory = null;
         let currentChapterIndex = 0;
+        // --- HỆ THỐNG LƯU LỊCH SỬ ĐỌC ---
+        function getReadingHistory(id) {
+            // Lấy cuốn sổ tay ra, nếu chưa có thì tạo sổ mới rỗng
+            const history = JSON.parse(localStorage.getItem('mytales_reading_history') || '{}');
+            return history[id]; // Trả về số thứ tự chương đã đọc (hoặc undefined nếu chưa đọc)
+        }
 
+        function saveReadingHistory(id, chapterIndex) {
+            const history = JSON.parse(localStorage.getItem('mytales_reading_history') || '{}');
+            history[id] = chapterIndex; // Ghi đè chương mới nhất vào sổ
+            localStorage.setItem('mytales_reading_history', JSON.stringify(history)); // Cất sổ đi
+        }
         window.onload = async () => {
             if (!storyId) {
                 alert("Không tìm thấy mã truyện!");
@@ -196,22 +207,39 @@
             document.getElementById('detail-desc').innerText = currentStory.desc || 'Chưa có lời giới thiệu.';
 
             const tocContainer = document.getElementById('detail-toc');
+            const btnRead = document.getElementById('btn-read-first');
+
             if (chapterCount === 0) {
                 tocContainer.innerHTML = '<p class="text-text-muted">Truyện chưa có chương nào.</p>';
-                document.getElementById('btn-read-first').onclick = () => alert('Truyện chưa có nội dung!');
+                btnRead.onclick = () => alert('Truyện chưa có nội dung!');
+                btnRead.innerHTML = `<i class="ph-fill ph-book-open"></i> ĐỌC TỪ ĐẦU`;
             } else {
+                // 1. Hiển thị Mục lục
                 tocContainer.innerHTML = currentStory.chaptersData.map((chap, index) => `
                     <button onclick="startReading(${index})" class="text-left px-4 py-3 bg-sakura-light/50 hover:bg-sakura-light rounded-xl truncate flex items-center gap-2 text-sm text-text-main">
                         <span class="font-bold text-sakura-dark text-xs whitespace-nowrap">CH ${index + 1}</span> 
                         <span class="truncate">${chap.title}</span>
                     </button>
                 `).join('');
-                document.getElementById('btn-read-first').onclick = () => startReading(0);
+
+                // 2. Kiểm tra lịch sử đọc để biến hình nút bấm
+                const savedIndex = getReadingHistory(storyId);
+                
+                if (savedIndex !== undefined && savedIndex < chapterCount) {
+                    // Nếu đã từng đọc -> Hiện nút ĐỌC TIẾP
+                    btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> ĐỌC TIẾP CHƯƠNG ${savedIndex + 1}`;
+                    btnRead.onclick = () => startReading(savedIndex);
+                } else {
+                    // Nếu chưa đọc bao giờ -> Hiện nút ĐỌC TỪ ĐẦU
+                    btnRead.innerHTML = `<i class="ph-fill ph-book-open"></i> ĐỌC TỪ ĐẦU`;
+                    btnRead.onclick = () => startReading(0);
+                }
             }
         }
 
         function startReading(index) {
             currentChapterIndex = index;
+            saveReadingHistory(storyId, currentChapterIndex);
             document.getElementById('view-detail').classList.add('hidden');
             document.getElementById('view-read').classList.remove('hidden');
             document.getElementById('read-story-title').innerText = currentStory.title;
@@ -323,6 +351,7 @@
             const newIndex = currentChapterIndex + step;
             if (newIndex >= 0 && newIndex < currentStory.chaptersData.length) {
                 currentChapterIndex = newIndex;
+                saveReadingHistory(storyId, currentChapterIndex);
                 renderChapter();
                 buildCommentUI('read-comments-container', currentChapterIndex)
                 window.scrollTo({ top: 0, behavior: 'smooth' });
