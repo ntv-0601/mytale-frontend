@@ -1026,7 +1026,12 @@ async function fetchStoriesFromBackend() {
                     bgElement.style.backgroundImage = ''; // Nếu xóa link sẽ tự về màu Gradient mặc định
                 }
                 
-                document.getElementById('author-display-intro').innerHTML = data.intro || '';
+                // --- XỬ LÝ XUỐNG DÒNG Ở ĐÂY ---
+                let introText = data.intro || '';
+                // Tự động tìm tất cả các dấu Enter (\n) và biến chúng thành thẻ xuống dòng (<br>)
+                introText = introText.replace(/\n/g, '<br>'); 
+                
+                document.getElementById('author-display-intro').innerHTML = introText;
             } catch (e) { console.error("Lỗi tải thông tin tác giả"); }
         }
       // 3. Kích hoạt mọi thứ khi web vừa mở lên
