@@ -212,7 +212,10 @@
             if (chapterCount === 0) {
                 tocContainer.innerHTML = '<p class="text-text-muted">Truyện chưa có chương nào.</p>';
                 btnRead.onclick = () => alert('Truyện chưa có nội dung!');
-                btnRead.innerHTML = `<i class="ph-fill ph-book-open"></i> ĐỌC TỪ ĐẦU`;
+                btnRead.innerHTML = `
+                    <i class="ph-fill ph-bookmark-simple flex-shrink-0 mt-0.5"></i> 
+                    <span class="text-center line-clamp-2 text-sm leading-snug">ĐỌC TIẾP: ${savedChapterTitle}</span>
+                `;
             } else {
                 // 1. Hiển thị Mục lục
                 tocContainer.innerHTML = currentStory.chaptersData.map((chap, index) => `
@@ -229,7 +232,10 @@
                     // Lấy tên chương từ dữ liệu dựa vào vị trí index đã lưu
                     const savedChapterTitle = currentStory.chaptersData[savedIndex].title;
                     // Hiện nút ĐỌC TIẾP kèm tên chương (Thêm class truncate để tránh chữ quá dài làm vỡ nút)
-                    btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> <span class="truncate">ĐỌC TIẾP: ${savedChapterTitle}</span>`;
+                    btnRead.innerHTML = `
+                    <i class="ph-fill ph-bookmark-simple flex-shrink-0 mt-0.5"></i> 
+                    <span class="text-center line-clamp-2 text-sm leading-snug">ĐỌC TIẾP: ${savedChapterTitle}</span>
+                `;
                     btnRead.onclick = () => startReading(savedIndex);
                 } else {
                     // Nếu chưa đọc bao giờ -> Hiện nút ĐỌC TỪ ĐẦU
@@ -264,7 +270,10 @@
             // Nếu có lịch sử đọc thì biến hình nút bấm kèm tên chương
             if (chapterCount > 0 && savedIndex !== undefined && savedIndex < chapterCount) {
                 const savedChapterTitle = currentStory.chaptersData[savedIndex].title;
-                btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> <span class="truncate">ĐỌC TIẾP: ${savedChapterTitle}</span>`;
+                btnRead.innerHTML = `
+                    <i class="ph-fill ph-bookmark-simple flex-shrink-0 mt-0.5"></i> 
+                    <span class="text-center line-clamp-2 text-sm leading-snug">ĐỌC TIẾP: ${savedChapterTitle}</span>
+                `;
                 btnRead.onclick = () => startReading(savedIndex);
             }
         }
