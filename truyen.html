@@ -226,8 +226,10 @@
                 const savedIndex = getReadingHistory(storyId);
                 
                 if (savedIndex !== undefined && savedIndex < chapterCount) {
-                    // Nếu đã từng đọc -> Hiện nút ĐỌC TIẾP
-                    btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> ĐỌC TIẾP CHƯƠNG ${savedIndex + 1}`;
+                    // Lấy tên chương từ dữ liệu dựa vào vị trí index đã lưu
+                    const savedChapterTitle = currentStory.chaptersData[savedIndex].title;
+                    // Hiện nút ĐỌC TIẾP kèm tên chương (Thêm class truncate để tránh chữ quá dài làm vỡ nút)
+                    btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> <span class="truncate">ĐỌC TIẾP: ${savedChapterTitle}</span>`;
                     btnRead.onclick = () => startReading(savedIndex);
                 } else {
                     // Nếu chưa đọc bao giờ -> Hiện nút ĐỌC TỪ ĐẦU
@@ -259,9 +261,10 @@
             const chapterCount = currentStory.chaptersData ? currentStory.chaptersData.length : 0;
             const savedIndex = getReadingHistory(storyId);
             
-            // Nếu có lịch sử đọc thì biến hình nút bấm
+            // Nếu có lịch sử đọc thì biến hình nút bấm kèm tên chương
             if (chapterCount > 0 && savedIndex !== undefined && savedIndex < chapterCount) {
-                btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> ĐỌC TIẾP CHƯƠNG ${savedIndex + 1}`;
+                const savedChapterTitle = currentStory.chaptersData[savedIndex].title;
+                btnRead.innerHTML = `<i class="ph-fill ph-bookmark-simple"></i> <span class="truncate">ĐỌC TIẾP: ${savedChapterTitle}</span>`;
                 btnRead.onclick = () => startReading(savedIndex);
             }
         }
