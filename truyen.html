@@ -217,7 +217,7 @@
                 // 1. Hiển thị Mục lục
                 tocContainer.innerHTML = currentStory.chaptersData.map((chap, index) => `
                     <button onclick="startReading(${index})" class="text-left px-4 py-3 bg-sakura-light/50 hover:bg-sakura-light rounded-xl truncate flex items-center gap-2 text-sm text-text-main">
-                        <span class="font-bold text-sakura-dark text-xs whitespace-nowrap">CH ${index + 1}</span> 
+                        <span class="font-bold text-sakura-dark text-xs whitespace-nowrap">${index + 1}</span> 
                         <span class="truncate">${chap.title}</span>
                     </button>
                 `).join('');
