@@ -575,7 +575,9 @@ async function fetchStoriesFromBackend() {
                                   <i class="${story.liked ? 'ph-fill text-rose-500' : 'ph group-hover/like:text-rose-400'} ph-heart text-sm transition-transform duration-300"></i>
                                   <span id="like-count-${story._id}" class="like-count ${story.liked ? 'text-rose-500' : ''}">${story.likes}</span>
                               </button>
-                              <span class="flex items-center gap-1 hidden sm:flex"><i class="ph-fill ph-star text-yellow-400"></i> 5.0</span>
+                              <span class="flex items-center gap-1 hidden sm:flex">
+                                    <i class="ph-fill ph-star text-yellow-400"></i> ${story.averageRating ? story.averageRating.toFixed(1) : '0.0'}
+                                </span>
                         </div>
                         <span class="flex items-center gap-1 text-sakura-dark dark:text-night-accent"><i class="ph-fill ph-list-dashes"></i> ${story.chaptersData ? story.chaptersData.length : 0}c</span>
                       </div>
@@ -826,21 +828,24 @@ async function fetchStoriesFromBackend() {
       }
       // --- STREAMING_CHUNK:Bộ lọc và Hiệu ứng... ---
       function applyFilters() {
-          const query = searchInput.value.toLowerCase();
-          const selectedFormats = Array.from(document.querySelectorAll('.filter-format:checked')).map(cb => cb.value);
-          const selectedStatuses = Array.from(document.querySelectorAll('.filter-status:checked')).map(cb => cb.value);
-          const selectedTags = Array.from(document.querySelectorAll('.filter-tag:checked')).map(cb => cb.value);
+            const query = searchInput.value.toLowerCase();
+            const selectedFormats = Array.from(document.querySelectorAll('.filter-format:checked')).map(cb => cb.value);
+            const selectedStatuses = Array.from(document.querySelectorAll('.filter-status:checked')).map(cb => cb.value);
+            const selectedTags = Array.from(document.querySelectorAll('.filter-tag:checked')).map(cb => cb.value);
 
-          const filtered = stories.filter(story => {
-              const matchSearch = story.title.toLowerCase().includes(query) || story.author.toLowerCase().includes(query);
-              const matchCategory = currentFilterCategory === 'all' || story.format === currentFilterCategory;
-              const matchFormat = selectedFormats.length === 0 || selectedFormats.includes(story.format);
-              const matchStatus = selectedStatuses.length === 0 || selectedStatuses.includes(story.status);
-              const matchTag = selectedTags.length === 0 || selectedTags.some(t => story.tags.includes(t));
-              return matchSearch && matchCategory && matchFormat && matchStatus && matchTag;
-          });
-          renderStories(filtered);
-      }
+            const filtered = stories.filter(story => {
+                const matchSearch = story.title.toLowerCase().includes(query) || story.author.toLowerCase().includes(query);
+                
+                // SỬA TẠI ĐÂY: Đồng bộ chính xác giữa Tab đang chọn (Truyện chữ/Tranh) và các checkbox ẩn
+                const matchCategory = currentFilterCategory === 'all' || story.format === currentFilterCategory;
+                const matchFormat = selectedFormats.length === 0 || selectedFormats.includes(story.format);
+                const matchStatus = selectedStatuses.length === 0 || selectedStatuses.includes(story.status);
+                const matchTag = selectedTags.length === 0 || selectedTags.some(t => story.tags.includes(t));
+                
+                return matchSearch && matchCategory && matchFormat && matchStatus && matchTag;
+            });
+            renderStories(filtered);
+        }
 
       searchInput.addEventListener('input', applyFilters);
       filterToggleBtn.addEventListener('click', () => filterPanel.classList.toggle('hidden'));
