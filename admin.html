@@ -161,10 +161,12 @@
                                 <label class="block text-sm font-bold text-text-muted mb-1">Tác giả</label>
                                 <input type="text" id="story-author" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
                             </div>
+                                    
                         </div>
-                        <div>
-                                <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
-                                <div class="flex items-center gap-3 mb-2">
+
+                                <div>
+                                    <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
+                                    <div class="flex items-center gap-3 mb-2">
                                     <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
                                         <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
                                     </button>
@@ -286,15 +288,23 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-5">
-                        <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Tác giả (Chỉ dành cho truyện)</label>
-                            <input type="text" id="edit-author" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
-                        </div>
-                        <div class="flex-grow flex flex-col">
-                            <label class="block text-sm font-bold text-text-muted mb-2">Giới thiệu (nếu sửa truyện) / Nội dung (nếu sửa chương)</label>
-                            <textarea id="edit-content" rows="8" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none leading-relaxed flex-grow resize-y"></textarea>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Tác giả (Chỉ dành cho truyện)</label>
+                        <input type="text" id="edit-author" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
                     </div>
+
+                    <!-- CHÈN ĐOẠN KHỐI THỂ LOẠI DƯỚI ĐÂY VÀO: -->
+                    <div>
+                        <label class="block text-sm font-bold text-text-muted mb-1">Thể loại / Tags (Chỉ dành cho truyện - Cách nhau bằng dấu phẩy)</label>
+                        <input type="text" id="edit-tags" placeholder="VD: hoc-duong, tinh-cam, hai-huoc" class="w-full px-5 py-3 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none">
+                    </div>
+                    <!-- KẾT THÚC ĐOẠN CHÈN -->
+
+                    <div class="flex-grow flex flex-col">
+                        <label class="block text-sm font-bold text-text-muted mb-2">Giới thiệu (nếu sửa truyện) / Nội dung (nếu sửa chương)</label>
+                        <textarea id="edit-content" rows="8" class="w-full px-5 py-4 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark text-text-main outline-none leading-relaxed flex-grow resize-y"></textarea>
+                    </div>
+                </div>
 
                     <button type="button" onclick="luuChinhSuaThongTin()" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-4 rounded-xl neon-btn mt-4 text-lg tracking-wide transition-all shadow-sm flex justify-center items-center gap-2">
                         <i class="ph-bold ph-floppy-disk text-xl"></i> LƯU THAY ĐỔI
@@ -882,10 +892,14 @@ function loadStoryDataForEdit() {
     const authorInput = document.getElementById('edit-author');
     const contentInput = document.getElementById('edit-content');
     const statusSelect = document.getElementById('edit-status');
+    // Lấy thêm ô input tags chỉnh sửa
+    const tagsInput = document.getElementById('edit-tags');
 
-    // Reset chương
+    // Reset chương và ô tags
     selectChap.innerHTML = '<option value="">-- Chọn chương cần sửa (Bỏ trống nếu sửa truyện) --</option>';
-    
+    if (tagsInput) { tagsInput.value = ''; tagsInput.disabled = false; }
+    if (authorInput) authorInput.disabled = false;
+
     if(!storyId) {
         titleInput.value = ''; authorInput.value = ''; contentInput.value = '';
         return;
@@ -897,6 +911,12 @@ function loadStoryDataForEdit() {
         authorInput.value = story.author || '';
         contentInput.value = story.desc || '';
         if (story.status) statusSelect.value = story.status;
+
+        // --- ĐOẠN THÊM MỚI: Chuyển mảng ["a", "b"] thành chuỗi "a, b" để nạp vào ô nhập liệu ---
+        if (tagsInput && story.tags && Array.isArray(story.tags)) {
+            tagsInput.value = story.tags.join(', ');
+        }
+        // -------------------------------------------------------------------------------------
 
         // Tải danh sách chương vào dropdown
         if(story.chaptersData) {
@@ -914,6 +934,7 @@ function loadChapterDataForEdit() {
     const titleInput = document.getElementById('edit-title');
     const authorInput = document.getElementById('edit-author');
     const contentInput = document.getElementById('edit-content');
+    const tagsInput = document.getElementById('edit-tags'); // Thêm dòng này
 
     if(!chapterId) {
         loadStoryDataForEdit();
@@ -927,11 +948,18 @@ function loadChapterDataForEdit() {
             titleInput.value = chapter.title || '';
             authorInput.value = 'Không áp dụng cho chương';
             authorInput.disabled = true; 
+            
+            // --- ĐOẠN THÊM MỚI: Khóa ô thể loại khi đang sửa chương ---
+            if (tagsInput) {
+                tagsInput.value = 'Không áp dụng cho chương';
+                tagsInput.disabled = true;
+            }
+            // ---------------------------------------------------------
+            
             contentInput.value = chapter.content || '';
         }
     }
 }
-
 // Hàm Lưu Chỉnh Sửa (Kích hoạt bằng onclick)
 async function luuChinhSuaThongTin() {
     const token = localStorage.getItem('mytales_token');
@@ -949,6 +977,10 @@ async function luuChinhSuaThongTin() {
         ? `https://my-tale.onrender.com/api/stories/${storyId}/chapters/${chapterId}`
         : `https://my-tale.onrender.com/api/stories/${storyId}`;
 
+    const rawTags = document.getElementById('edit-tags').value;
+    const tagsArray = rawTags.split(',')
+                             .map(t => t.trim().toLowerCase())
+                             .filter(t => t !== "");
     const payload = isEditingChapter 
         ? {
             title: document.getElementById('edit-title').value,
@@ -958,7 +990,8 @@ async function luuChinhSuaThongTin() {
             title: document.getElementById('edit-title').value,
             author: document.getElementById('edit-author').value,
             desc: document.getElementById('edit-content').value,
-            status: document.getElementById('edit-status').value
+            status: document.getElementById('edit-status').value,
+            tags: tagsArray // <-- THÊM TRƯỜNG DỮ LIỆU MẢNG TAGS MỚI VÀO ĐÂY
         };
 
     try {
