@@ -629,7 +629,7 @@ async function fetchStoriesFromBackend() {
             await fetch(`https://my-tale.onrender.com/api/stories/${id}/like`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ likes: story.likes })
+                body: JSON.stringify({ likes: story.likes }) // Gửi số lượng tim sau khi đã tăng/giảm ở giao diện
             });
         } catch (error) {
             console.error("Lỗi khi lưu tim vào Database:", error);
