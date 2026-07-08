@@ -151,30 +151,39 @@
                                     <option value="truyen-tranh">Truyện Tranh</option>
                                 </select>
                             </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-bold mb-2 text-text-main">Thể loại (Tags):</label>
+                                <input type="text" id="admin-story-tags" placeholder="Ví dụ: hoc-duong, tinh-cam, trinh-tham, hai-huoc" 
+                                    class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-sakura-mid bg-white text-text-main">
+                                <p class="text-xs text-text-muted mt-1">* Các thể loại cách nhau bằng dấu phẩy. Thể loại mới viết liền không dấu hoặc dùng dấu gạch ngang (Ví dụ: hanh-dong).</p>
+                            </div>
                             <div>
                                 <label class="block text-sm font-bold text-text-muted mb-1">Tác giả</label>
                                 <input type="text" id="story-author" required class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
-                            <div class="flex items-center gap-3 mb-2">
-                                <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
-                                    <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
-                                </button>
-                                <input type="file" id="cover-file-input" accept="image/*" class="hidden">
-                                <span id="cover-upload-status" class="text-sm font-bold"></span>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Ảnh Bìa Truyện</label>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <button type="button" id="btn-upload-cover" class="bg-white hover:bg-sakura-light text-text-main px-4 py-2.5 rounded-lg text-sm transition-colors border border-sakura-mid flex items-center gap-2 font-bold shadow-sm">
+                                        <i class="ph-bold ph-upload-simple"></i> Chọn ảnh từ máy
+                                    </button>
+                                    <input type="file" id="cover-file-input" accept="image/*" class="hidden">
+                                    <span id="cover-upload-status" class="text-sm font-bold"></span>
+                                </div>
+                                <input type="text" id="story-image" placeholder="Link ảnh sẽ tự động hiện ở đây..." class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
                             </div>
-                            <input type="text" id="story-image" placeholder="Link ảnh sẽ tự động hiện ở đây..." class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Thể loại (cách nhau dấu phẩy)</label>
-                            <input type="text" id="story-tags" placeholder="VD: hoc-duong, tinh-cam" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-text-muted mb-1">Mô tả ngắn</label>
-                            <textarea id="story-desc" rows="3" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-none"></textarea>
-                        </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Thể loại / Tags (Cách nhau bằng dấu phẩy)</label>
+                                <input type="text" id="story-tags" placeholder="Ví dụ: hoc-duong, tinh-cam, trinh-tham, hai-huoc" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none transition-colors">
+                                <p class="text-[10px] text-text-muted mt-1">* Thể loại mới viết liền không dấu hoặc cách nhau bằng dấu gạch ngang (Ví dụ: hanh-dong, trong-sinh).</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-text-muted mb-1">Mô tả ngắn</label>
+                                <textarea id="story-desc" rows="3" class="w-full px-4 py-2.5 rounded-xl bg-white/80 border border-sakura-mid focus:border-sakura-dark focus:ring-2 focus:ring-sakura-mid/30 text-text-main outline-none resize-none"></textarea>
+                            </div>
                         <button type="submit" class="w-full bg-sakura-dark hover:bg-[#d48895] text-white font-bold py-3.5 rounded-xl neon-btn mt-4 transition-all">
                             XUẤT BẢN TRUYỆN
                         </button>

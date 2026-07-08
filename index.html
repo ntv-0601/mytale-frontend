@@ -330,16 +330,8 @@
                     </div>
                     <div>
                         <h4 class="font-semibold text-text-muted dark:text-night-text-muted mb-2 text-sm uppercase tracking-wider">Chủ đề</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
-                                <input type="checkbox" value="hoc-duong" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Học Đường
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
-                                <input type="checkbox" value="tinh-cam" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Tình Cảm
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text">
-                                <input type="checkbox" value="hai-huoc" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> Hài Hước
-                            </label>
+                        <div id="dynamic-filter-tags" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                            <p class="text-xs text-text-muted italic">Đang tải chủ đề...</p>
                         </div>
                     </div>
                 </div>
@@ -1058,8 +1050,31 @@ async function fetchStoriesFromBackend() {
           loadDynamicMarquee(); 
           loadRulesDisplay(); 
           loadAuthorProfileDisplay(); // Gọi hàm hiển thị tác giả
+          loadDynamicFilters();
           setInterval(syncLikes, 5000);
       });
+      // Hàm tự động tải toàn bộ thể loại từ Database và ghim vào bộ lọc Trang chủ
+            async function loadDynamicFilters() {
+                try {
+                    const response = await fetch('https://my-tale.onrender.com/api/tags');
+                    if (!response.ok) return;
+                    const tags = await response.json();
+                    
+                    const filterContainer = document.getElementById('dynamic-filter-tags');
+                    if (filterContainer && tags.length > 0) {
+                        filterContainer.innerHTML = tags.map(tag => `
+                            <label class="flex items-center gap-2 cursor-pointer text-text-main dark:text-night-text text-sm">
+                                <input type="checkbox" value="${tag}" onchange="applyFilters()" class="filter-tag accent-sakura-dark dark:accent-night-accent w-4 h-4 rounded"> 
+                                <span class="capitalize">${tag.replace('-', ' ')}</span>
+                            </label>
+                        `).join('');
+                    } else if (tags.length === 0) {
+                        filterContainer.innerHTML = '<p class="text-xs text-text-muted italic">Chưa có thể loại nào</p>';
+                    }
+                } catch (error) {
+                    console.error("Không thể tải danh sách thể loại từ API:", error);
+                }
+            }
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
 
