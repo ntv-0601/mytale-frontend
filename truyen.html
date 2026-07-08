@@ -200,7 +200,14 @@
             document.getElementById('detail-cover').src = currentStory.image;
             document.getElementById('detail-title').innerText = currentStory.title;
             document.getElementById('detail-author').innerText = `Tác giả: ${currentStory.author}`;
-            document.getElementById('detail-status').innerText = currentStory.status === 'hoan-thanh' ? 'Hoàn thành' : 'Đang ra';
+            const statusContainer = document.getElementById('detail-status');
+            if (currentStory.status === 'hoan-thanh' || currentStory.status === 'Hoàn thành') {
+                statusContainer.innerText = 'Hoàn thành';
+            } else if (currentStory.status === 'tam-ngung' || currentStory.status === 'Tạm ngưng') {
+                statusContainer.innerText = 'Tạm ngưng';
+            } else {
+                statusContainer.innerText = 'Đang ra';
+            }
             
             const chapterCount = currentStory.chaptersData ? currentStory.chaptersData.length : 0;
             document.getElementById('detail-chapter-count').innerText = chapterCount;
