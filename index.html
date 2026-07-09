@@ -74,12 +74,69 @@
         97% { background-color: rgba(255, 255, 255, 0.1); }
       }
 
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #f4c7cc; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #e598a3; }
-      body.dark ::-webkit-scrollbar-thumb { background: #475569; }
-      body.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+      /* ================================================================= */
+/* NÂNG CẤP THANH CUỘN XINH XẮN CHO TOÀN TRANG (SÁNG & TỐI) */
+/* ================================================================= */
+
+/* 1. Định dạng kích thước thanh cuộn */
+::-webkit-scrollbar { 
+    width: 10px; 
+    height: 10px;
+}
+
+/* 2. Đường ray chạy của thanh cuộn */
+::-webkit-scrollbar-track { 
+    background: rgba(253, 244, 245, 0.5); /* Nền sakura siêu nhẹ */
+    border-radius: 10px;
+}
+body.dark ::-webkit-scrollbar-track { 
+    background: rgba(15, 23, 42, 0.5); /* Nền tối mịn màng */
+}
+
+/* 3. Cục kéo (Thumb) - Hiệu ứng Gradient Sakura mộng mơ */
+::-webkit-scrollbar-thumb { 
+    background: linear-gradient(180deg, #F4C7CC 0%, #E598A3 100%);
+    border: 2px solid #FDF4F5; /* Tạo khoảng trống giúp thanh cuộn thanh thoát hơn */
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(229, 152, 163, 0.2);
+}
+
+/* Chế độ tối: Cục kéo đổi sang màu xanh Neon/Màn đêm huyền ảo */
+body.dark ::-webkit-scrollbar-thumb { 
+    background: linear-gradient(180deg, #475569 0%, #60a5fa 100%);
+    border: 2px solid #0f172a;
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+}
+
+/* 4. Hiệu ứng khi di chuột qua (Hover) - Tự động đậm lên và đổi màu */
+::-webkit-scrollbar-thumb:hover { 
+    background: linear-gradient(180deg, #E598A3 0%, #D48895 100%);
+    box-shadow: 0 0 8px rgba(229, 152, 163, 0.5);
+}
+body.dark ::-webkit-scrollbar-thumb:hover { 
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+}
+/* Áp dụng thanh cuộn mini, tinh tế cho các khung nhỏ bên trong web */
+#rules-container::-webkit-scrollbar,
+#dynamic-filter-tags::-webkit-scrollbar,
+#detail-toc::-webkit-scrollbar {
+    width: 5px;
+}
+
+#rules-container::-webkit-scrollbar-thumb,
+#dynamic-filter-tags::-webkit-scrollbar-thumb,
+#detail-toc::-webkit-scrollbar-thumb {
+    background: #F4C7CC;
+    border-radius: 10px;
+    border: none;
+}
+
+body.dark #rules-container::-webkit-scrollbar-thumb,
+body.dark #dynamic-filter-tags::-webkit-scrollbar-thumb,
+body.dark #detail-toc::-webkit-scrollbar-thumb {
+    background: #475569;
+}
 
       .glass-header { background: rgba(253, 244, 245, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(244, 199, 204, 0.4); }
       body.dark .glass-header { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(51, 65, 85, 0.8); }
