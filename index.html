@@ -79,55 +79,46 @@
 
         /* 1. Kích thước tổng thể của thanh cuộn */
         ::-webkit-scrollbar { 
-            width: 10px; 
-            height: 10px;
+            width: 12px; 
+            height: 12px;
         }
 
-        /* 2. Đường ray ẩn ngầm (Track) - Lối mòn rêu phong mềm mại */
-        ::-webkit-scrollbar-track { 
-            background: rgba(92, 64, 68, 0.02);
-            border-radius: 20px;
-            box-shadow: inset 1px 0 3px rgba(229, 152, 163, 0.05);
-        }
-        body.dark ::-webkit-scrollbar-track { 
-            background: rgba(15, 23, 42, 0.3);
-            box-shadow: inset 1px 0 3px rgba(96, 165, 250, 0.05);
-        }
-
-        /* 3. Thân dây leo phát sáng (Thumb) - Bo tròn tuyệt đối như dòng chảy sinh mệnh */
+        /* 2. Thân dây leo phát sáng (Thumb) - Được tạo hình bo tròn */
         ::-webkit-scrollbar-thumb { 
             background: linear-gradient(180deg, #F4C7CC 0%, #E598A3 50%, #B57C85 100%);
             border-radius: 20px;
-            border: 2px solid #FDF4F5; /* Tạo khoảng trống giúp thanh cuộn thanh thoát */
-            box-shadow: 
-                0 0 6px rgba(229, 152, 163, 0.4), /* Hào quang phấn hoa hồng */
-                inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            /* Tạo khoảng trống bên trong để dây leo trông thanh thoát hơn */
+            border: 2px solid #FDF4F5; 
+            box-shadow: 0 0 6px rgba(229, 152, 163, 0.4), /* Hào quang hồng phấn */
+                        inset 0 1px 2px rgba(255, 255, 255, 0.6);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Chế độ tối: Dây leo ma thuật bóng đêm (Mystic Night Vine) */
         body.dark ::-webkit-scrollbar-thumb { 
             background: linear-gradient(180deg, #334155 0%, #60a5fa 50%, #1d4ed8 100%);
-            border: 2px solid #0f172a;
-            box-shadow: 
-                0 0 8px rgba(96, 165, 250, 0.5), /* Dạ quang xanh Lam thần thoại */
-                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            border-color: #0f172a;
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.5), /* Dạ quang xanh Lam thần thoại */
+                        inset 0 1px 2px rgba(255, 255, 255, 0.2);
         }
 
-        /* 4. Hiệu ứng thức tỉnh sinh trưởng khi rọi chuột (Hover) */
+        /* 3. Hiệu ứng khi rọi chuột lên dây leo (Hover) */
         ::-webkit-scrollbar-thumb:hover { 
             background: linear-gradient(180deg, #E598A3 0%, #D48895 50%, #5C4044 100%);
-            border: 1px solid #FDF4F5; /* Thân dây nở rộng nhẹ nhàng */
-            box-shadow: 
-                0 0 12px rgba(229, 152, 163, 0.8), /* Phát sáng mạnh hơn */
-                inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            border-width: 1px; /* Thân dây nở rộng nhẹ nhàng */
+            box-shadow: 0 0 12px rgba(229, 152, 163, 0.8), /* Phát sáng mạnh hơn */
+                        inset 0 1px 3px rgba(255, 255, 255, 0.8);
         }
         body.dark ::-webkit-scrollbar-thumb:hover { 
             background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 50%, #93c5fd 100%);
-            border: 1px solid #0f172a;
-            box-shadow: 
-                0 0 16px rgba(96, 165, 250, 0.9), /* Tinh linh bóng đêm thức tỉnh */
-                inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            border-color: #0f172a;
+            box-shadow: 0 0 16px rgba(96, 165, 250, 0.9), /* Tinh linh bóng đêm thức tỉnh */
+                        inset 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        /* 4. Đường ray (Track) - Không hiển thị nền để trông tự nhiên hơn */
+        ::-webkit-scrollbar-track { 
+            background: transparent;
         }
 
         /* 5. Áp dụng phiên bản mầm cây mini tinh tế cho các khung nhỏ bên trong */
