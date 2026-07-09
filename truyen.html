@@ -402,11 +402,15 @@
         // --- HỆ THỐNG BÌNH LUẬN ---
         
         // 1. Lấy mã định danh (Dùng chung với Góc Tâm Sự)
-        let myUUID = localStorage.getItem('mytale_anon_uuid');
-        if (!myUUID) {
-            myUUID = 'anon_' + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem('mytale_anon_uuid', myUUID);
+        let baseAnonUUID = localStorage.getItem('mytale_anon_uuid');
+        if (!baseAnonUUID) {
+            baseAnonUUID = 'anon_' + Math.random().toString(36).substr(2, 6);
+            localStorage.setItem('mytale_anon_uuid', baseAnonUUID);
         }
+
+// Kiểm tra xem có đang đăng nhập QTV không
+let qtvName = localStorage.getItem('mytales_qtv_name'); 
+let myUUID = qtvName ? `👑 QTV ${qtvName}` : baseAnonUUID;
 
         let currentComments = [];
 
@@ -473,23 +477,31 @@
                         chapterTag = `<span class="bg-sakura-light border border-sakura-mid/30 text-sakura-dark px-2 py-0.5 rounded-md text-[10px] ml-2 font-bold whitespace-nowrap shadow-sm"><i class="ph-fill ph-book-open mr-1"></i>Chương ${cmt.chapterIndex + 1}</span>`;
                     }
                     
+                    const isQTV = cmt.uuid.includes('QTV');
+                    const nameColorClass = isQTV ? 'text-rose-600 font-extrabold' : (isMyComment ? 'text-sakura-dark' : 'text-text-main');
+
                     html += `
                         <div class="flex gap-3 group">
-                            <div class="w-10 h-10 rounded-full ${isMyComment ? 'bg-sakura-dark' : 'bg-gray-200'} text-white flex items-center justify-center font-bold flex-shrink-0 text-xs overflow-hidden shadow-sm">
-                                ${isMyComment ? 'Bạn' : '<i class="ph-fill ph-user text-gray-400 text-lg"></i>'}
+                            <div class="w-10 h-10 rounded-full ${isMyComment || isQTV ? 'bg-sakura-dark' : 'bg-gray-200'} text-white flex items-center justify-center font-bold flex-shrink-0 text-xs overflow-hidden shadow-sm">
+                                ${isMyComment ? 'Bạn' : (isQTV ? '<i class="ph-fill ph-shield-star text-xl"></i>' : '<i class="ph-fill ph-user text-gray-400 text-lg"></i>')}
                             </div>
                             <div class="flex-grow">
                                 <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-sakura-mid/20 inline-block max-w-full">
                                     <div class="flex items-center gap-2 justify-between mb-1">
                                         <div class="flex items-center flex-wrap gap-1">
-                                            <span class="font-bold text-sm ${isMyComment ? 'text-sakura-dark' : 'text-text-main'}">${cmt.uuid}</span>
+                                            <span class="font-bold text-sm ${nameColorClass}">${cmt.uuid}</span>
                                             ${chapterTag}
                                         </div>
                                         ${adminToken ? `<button onclick="deleteComment('${cmt._id}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xóa bình luận"><i class="ph-bold ph-trash"></i></button>` : ''}
                                     </div>
                                     <p class="text-text-main whitespace-pre-wrap break-words">${cmt.content}</p>
                                 </div>
-                                <div class="text-[10px] text-text-muted mt-1 ml-2">${timeStr}</div>
+                                <div class="flex items-center gap-4 text-[10px] text-text-muted mt-1 ml-2">
+                                    <span>${timeStr}</span>
+                                    <button onclick="replyTo('${cmt.uuid}', ${chapterContext})" class="text-sakura-dark hover:underline flex items-center gap-1 font-bold">
+                                        <i class="ph-bold ph-arrow-u-up-left"></i> Trả lời
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -726,6 +738,18 @@
                     updateStarsUI(currentRatingScore);
                 }
             });
+        }
+        // Hàm xử lý khi nhấn nút Trả lời
+        function replyTo(targetUUID, chapterContext) {
+            const inputEl = document.getElementById(`comment-input-${chapterContext}`);
+            if (inputEl) {
+                // Gắn thẻ tên người dùng vào ô text
+                inputEl.value = `@${targetUUID}: ` + inputEl.value;
+                inputEl.focus(); // Tự động trỏ chuột vào ô nhập liệu
+                
+                // Cuộn màn hình tới ô nhập liệu
+                inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
