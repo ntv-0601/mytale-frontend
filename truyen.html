@@ -413,14 +413,13 @@ let qtvName = localStorage.getItem('mytales_qtv_name');
 let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
 
         let currentComments = [];
-
+        let replyingToId = null;
         // 2. Tải toàn bộ bình luận của truyện này
         async function fetchComments() {
             try {
                 const response = await fetch(`https://my-tale.onrender.com/api/comments/${storyId}`);
                 if (response.ok) {
                     currentComments = await response.json();
-                    // Cập nhật lại khung bình luận tùy theo người dùng đang đứng ở đâu
                     if (!document.getElementById('view-detail').classList.contains('hidden')) {
                         buildCommentUI('detail-comments-container', -1);
                     } else {
@@ -429,18 +428,30 @@ let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
                 }
             } catch (error) { console.error("Lỗi tải bình luận:", error); }
         }
-
+        function toggleReplies(commentId) {
+            const repliesDiv = document.getElementById(`replies-${commentId}`);
+            const toggleIcon = document.getElementById(`icon-toggle-${commentId}`);
+            if (repliesDiv.classList.contains('hidden')) {
+                repliesDiv.classList.remove('hidden');
+                toggleIcon.classList.replace('ph-caret-down', 'ph-caret-up');
+            } else {
+                repliesDiv.classList.add('hidden');
+                toggleIcon.classList.replace('ph-caret-up', 'ph-caret-down');
+            }
+        }
         // 3. Xây dựng giao diện Khung bình luận
-        function buildCommentUI(containerId, chapterContext) {
+       function buildCommentUI(containerId, chapterContext) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            // ĐÃ SỬA: Nếu ở trang chi tiết (chapterContext === -1) thì lấy TOÀN BỘ bình luận
-            // Nếu ở trong chương cụ thể (chapterContext >= 0) thì chỉ lấy bình luận của chương đó
             const filteredComments = chapterContext === -1 
                 ? currentComments 
                 : currentComments.filter(c => c.chapterIndex === chapterContext);
-                
+            
+            // Lọc ra bình luận gốc và bình luận phản hồi
+            const parentComments = filteredComments.filter(c => !c.parentId);
+            const childComments = filteredComments.filter(c => c.parentId);
+
             const adminToken = localStorage.getItem('mytales_token');
 
             let html = `
@@ -458,65 +469,45 @@ let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
                     </div>
                 </div>
                 
-                <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-5">
             `;
 
-            if (filteredComments.length === 0) {
+            if (parentComments.length === 0) {
                 html += `<p class="text-center text-text-muted text-sm italic py-4">Chưa có bình luận nào. Hãy là người đầu tiên!</p>`;
             } else {
-                filteredComments.forEach(cmt => {
-                    // Định dạng ngày giờ
-                    const date = new Date(cmt.createdAt);
-                    const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} - ${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth()+1).padStart(2, '0')}`;
+                parentComments.forEach(cmt => {
+                    // Render HTML của bình luận gốc
+                    html += `<div class="comment-thread">`;
+                    html += generateCommentHTML(cmt, false, chapterContext, adminToken);
                     
-                    const isMyComment = cmt.uuid === myUUID;
-                    
-                    // ĐÃ THÊM: Tạo nhãn "Chương X" nếu bình luận này thuộc về 1 chương VÀ người dùng đang xem ở trang chi tiết
-                    let chapterTag = '';
-                    if (chapterContext === -1 && cmt.chapterIndex >= 0) {
-                        chapterTag = `<span class="bg-sakura-light border border-sakura-mid/30 text-sakura-dark px-2 py-0.5 rounded-md text-[10px] ml-2 font-bold whitespace-nowrap shadow-sm"><i class="ph-fill ph-book-open mr-1"></i>Chương ${cmt.chapterIndex + 1}</span>`;
+                    // Render danh sách trả lời (nếu có)
+                    const replies = childComments.filter(c => c.parentId === cmt._id);
+                    if (replies.length > 0) {
+                        html += `
+                            <div class="ml-12 mt-2">
+                                <button onclick="toggleReplies('${cmt._id}')" class="text-xs font-bold text-text-muted hover:text-sakura-dark transition-colors flex items-center gap-1 mb-3 bg-sakura-light/50 px-3 py-1 rounded-full border border-sakura-mid/30">
+                                    <div class="w-4 h-[1px] bg-sakura-mid mr-1"></div>
+                                    ${replies.length} câu trả lời <i id="icon-toggle-${cmt._id}" class="ph-bold ph-caret-down ml-1"></i>
+                                </button>
+                                
+                                <div id="replies-${cmt._id}" class="hidden space-y-4 pl-4 border-l-2 border-sakura-mid/30">
+                                    ${replies.map(reply => generateCommentHTML(reply, true, chapterContext, adminToken)).join('')}
+                                </div>
+                            </div>
+                        `;
                     }
-                    
-                    const isQTV = cmt.uuid.includes('QTV');
-                    const nameColorClass = isQTV ? 'text-rose-600 font-extrabold' : (isMyComment ? 'text-sakura-dark' : 'text-text-main');
-
-                    html += `
-                        <div class="flex gap-3 group">
-                            <div class="w-10 h-10 rounded-full ${isMyComment || isQTV ? 'bg-sakura-dark' : 'bg-gray-200'} text-white flex items-center justify-center font-bold flex-shrink-0 text-xs overflow-hidden shadow-sm">
-                                ${isMyComment ? 'Bạn' : (isQTV ? '<i class="ph-fill ph-shield-star text-xl"></i>' : '<i class="ph-fill ph-user text-gray-400 text-lg"></i>')}
-                            </div>
-                            <div class="flex-grow">
-                                <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border border-sakura-mid/20 inline-block max-w-full">
-                                    <div class="flex items-center gap-2 justify-between mb-1">
-                                        <div class="flex items-center flex-wrap gap-1">
-                                            <span class="font-bold text-sm ${nameColorClass}">${cmt.uuid}</span>
-                                            ${chapterTag}
-                                        </div>
-                                        ${adminToken ? `<button onclick="deleteComment('${cmt._id}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xóa bình luận"><i class="ph-bold ph-trash"></i></button>` : ''}
-                                    </div>
-                                    <p class="text-text-main whitespace-pre-wrap break-words">${cmt.content}</p>
-                                </div>
-                                <div class="flex items-center gap-4 text-[10px] text-text-muted mt-1 ml-2">
-                                    <span>${timeStr}</span>
-                                    <button onclick="replyTo('${cmt.uuid}', ${chapterContext})" class="text-sakura-dark hover:underline flex items-center gap-1 font-bold">
-                                        <i class="ph-bold ph-arrow-u-up-left"></i> Trả lời
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    html += `</div>`;
                 });
             }
 
             html += `</div>`;
             container.innerHTML = html;
         }
-
+        
         // 4. Gửi bình luận lên máy chủ
         async function submitComment(chapterContext) {
             const inputEl = document.getElementById(`comment-input-${chapterContext}`);
             const content = inputEl.value.trim();
-            
             if (!content) return;
             
             inputEl.disabled = true;
@@ -529,18 +520,22 @@ let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
                         storyId: storyId,
                         chapterIndex: chapterContext,
                         uuid: myUUID,
-                        content: content
+                        content: content,
+                        parentId: replyingToId // Gửi thêm ID của bình luận cha lên server
                     })
                 });
 
                 if (response.ok) {
                     inputEl.value = '';
+                    inputEl.placeholder = "Nhập bình luận ẩn danh của bạn...";
+                    replyingToId = null; // Reset lại trạng thái
                     fetchComments(); // Tải lại danh sách
                 }
             } catch (error) {
                 alert("Lỗi kết nối. Không thể gửi bình luận.");
             } finally {
                 inputEl.disabled = false;
+                inputEl.focus();
             }
         }
 
@@ -553,7 +548,7 @@ let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + adminToken }
                 });
-                fetchComments(); // Tải lại danh sách
+                fetchComments(); 
             } catch (error) {
                 alert('Lỗi xóa bình luận');
             }
@@ -740,16 +735,60 @@ let myUUID = qtvName ? `👑 ${qtvName}` : baseAnonUUID;
             });
         }
         // Hàm xử lý khi nhấn nút Trả lời
-        function replyTo(targetUUID, chapterContext) {
+        function replyTo(commentId, targetUUID, chapterContext) {
+            replyingToId = commentId; // Lưu ID bình luận gốc
             const inputEl = document.getElementById(`comment-input-${chapterContext}`);
             if (inputEl) {
-                // Gắn thẻ tên người dùng vào ô text
-                inputEl.value = `@${targetUUID}: ` + inputEl.value;
-                inputEl.focus(); // Tự động trỏ chuột vào ô nhập liệu
-                
-                // Cuộn màn hình tới ô nhập liệu
+                inputEl.placeholder = `Đang trả lời @${targetUUID} (Bấm ESC để hủy)...`;
+                inputEl.focus();
                 inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Lắng nghe nút ESC để hủy trả lời
+                inputEl.addEventListener('keydown', function escHandler(e) {
+                    if (e.key === 'Escape') {
+                        replyingToId = null;
+                        inputEl.placeholder = "Nhập bình luận ẩn danh của bạn...";
+                        inputEl.value = "";
+                        inputEl.removeEventListener('keydown', escHandler);
+                    }
+                });
             }
+        }
+        function generateCommentHTML(cmt, isReply = false, chapterContext, adminToken) {
+            const date = new Date(cmt.createdAt);
+            const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} - ${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth()+1).padStart(2, '0')}`;
+            const isMyComment = cmt.uuid === myUUID;
+            const isQTV = cmt.uuid.includes('QTV');
+            const nameColorClass = isQTV ? 'text-rose-600 font-extrabold' : (isMyComment ? 'text-sakura-dark' : 'text-text-main');
+            
+            let chapterTag = '';
+            if (chapterContext === -1 && cmt.chapterIndex >= 0) {
+                chapterTag = `<span class="bg-sakura-light border border-sakura-mid/30 text-sakura-dark px-2 py-0.5 rounded-md text-[10px] ml-2 font-bold whitespace-nowrap shadow-sm"><i class="ph-fill ph-book-open mr-1"></i>Chương ${cmt.chapterIndex + 1}</span>`;
+            }
+
+            return `
+                <div class="flex gap-3 group">
+                    <div class="${isReply ? 'w-8 h-8 text-[10px]' : 'w-10 h-10 text-xs'} rounded-full ${isMyComment || isQTV ? 'bg-sakura-dark' : 'bg-gray-200'} text-white flex items-center justify-center font-bold flex-shrink-0 overflow-hidden shadow-sm">
+                        ${isMyComment ? 'Bạn' : (isQTV ? '<i class="ph-fill ph-shield-star text-lg"></i>' : '<i class="ph-fill ph-user text-gray-400"></i>')}
+                    </div>
+                    <div class="flex-grow">
+                        <div class="bg-white ${isReply ? 'px-3 py-2' : 'px-4 py-3'} rounded-2xl rounded-tl-sm shadow-sm border border-sakura-mid/20 inline-block max-w-full">
+                            <div class="flex items-center gap-2 justify-between mb-1">
+                                <div class="flex items-center flex-wrap gap-1">
+                                    <span class="font-bold ${isReply ? 'text-xs' : 'text-sm'} ${nameColorClass}">${cmt.uuid}</span>
+                                    ${chapterTag}
+                                </div>
+                                ${adminToken ? `<button onclick="deleteComment('${cmt._id}')" class="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash"></i></button>` : ''}
+                            </div>
+                            <p class="text-text-main whitespace-pre-wrap break-words ${isReply ? 'text-sm' : ''}">${cmt.content}</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-[10px] text-text-muted mt-1 ml-2">
+                            <span>${timeStr}</span>
+                            ${!isReply ? `<button onclick="replyTo('${cmt._id}', '${cmt.uuid}', ${chapterContext})" class="text-sakura-dark hover:underline flex items-center gap-1 font-bold"><i class="ph-bold ph-arrow-u-up-left"></i> Trả lời</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
     </script>
     <div id="music-player" class="fixed bottom-6 left-6 z-50 glass-panel border border-sakura-mid/50 shadow-sakura rounded-full p-2 flex items-center gap-3 transition-all hover:pr-4 group max-w-[200px] md:max-w-[250px]">
